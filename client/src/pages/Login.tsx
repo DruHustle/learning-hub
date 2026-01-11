@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BrainCircuit, Lock, Mail, Eye, EyeOff } from "lucide-react";
+import { GraduationCap, Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -56,7 +56,7 @@ export default function Login() {
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="w-12 h-12 rounded bg-primary flex items-center justify-center shadow-[0_0_20px_var(--primary)]">
-              <BrainCircuit className="w-7 h-7 text-primary-foreground" />
+              <GraduationCap className="w-7 h-7 text-primary-foreground" />
             </div>
           </div>
           <CardTitle className="text-2xl font-display font-bold tracking-wide">SAP BTP Learning App</CardTitle>
