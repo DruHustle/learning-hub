@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Brain, Github, Menu, X, ArrowLeft } from "lucide-react";
+import { Brain, Github, Menu, X, ArrowLeft, GraduationCap } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -48,12 +48,10 @@ export default function Layout({ children }: LayoutProps) {
         <div className="container flex h-16 items-center justify-between">
           <Link href="/">
             <div className="flex items-center gap-3 transition-opacity hover:opacity-80 cursor-pointer">
-              <img
-                src="images/profile.jpg"
-                alt="Andrew Gotora"
-                className="w-10 h-10 rounded-full border-2 border-blue-500/50 object-cover"
-              />
-              <span className="text-xl font-bold tracking-tight text-white hidden sm:inline">SAP BTP AI Hub</span>
+              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shadow-[0_0_20px_var(--primary)]">
+                <GraduationCap className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <span className="text-xl font-bold tracking-tight text-white hidden sm:inline">Learning Hub</span>
             </div>
           </Link>
 
