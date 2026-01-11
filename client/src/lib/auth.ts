@@ -19,15 +19,14 @@ interface StoredUser extends User {
 
 const USERS_KEY = 'imsop_users';
 const SESSION_KEY = 'imsop_session';
-const RESET_TOKENS_KEY = 'imsop_reset_tokens';
 import { safeLocalStorage } from './storage';
 
 // Demo users - pre-populated on first load
 const DEMO_USERS: StoredUser[] = [
-  { id: '1', email: 'admin@imsop.io', password: 'admin123', name: 'Admin User', role: 'admin' },
-  { id: '2', email: 'engineer@imsop.io', password: 'engineer123', name: 'Engineer User', role: 'engineer' },
-  { id: '3', email: 'analyst@imsop.io', password: 'analyst123', name: 'Analyst User', role: 'analyst' },
-  { id: '4', email: 'demo@imsop.io', password: 'demo123', name: 'Demo User', role: 'user' },
+  { id: '1', email: 'admin@sap.com', password: 'admin123', name: 'Admin User', role: 'admin' },
+  { id: '2', email: 'engineer@sap.com', password: 'engineer123', name: 'Engineer User', role: 'engineer' },
+  { id: '3', email: 'analyst@sap.com', password: 'analyst123', name: 'Analyst User', role: 'analyst' },
+  { id: '4', email: 'demo@sap.com', password: 'demo123', name: 'Demo User', role: 'user' },
 ];
 
 // Initialize demo users if not exists
@@ -40,7 +39,8 @@ function initializeUsers(): void {
 
 function getUsers(): StoredUser[] {
   initializeUsers();
-  return JSON.parse(safeLocalStorage.getItem(USERS_KEY) || '[]');
+  const stored = safeLocalStorage.getItem(USERS_KEY);
+  return stored ? JSON.parse(stored) : DEMO_USERS;
 }
 
 function saveUsers(users: StoredUser[]): void {
