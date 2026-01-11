@@ -36,10 +36,10 @@ export default function Login() {
 
   const fillDemoCredentials = (role: string) => {
     const credentials: Record<string, { email: string; password: string }> = {
-      admin: { email: "admin@imsop.io", password: "admin123" },
-      engineer: { email: "engineer@imsop.io", password: "engineer123" },
-      analyst: { email: "analyst@imsop.io", password: "analyst123" },
-      demo: { email: "demo@imsop.io", password: "demo123" },
+      admin: { email: "admin@sap.com", password: "admin123" },
+      engineer: { email: "engineer@sap.com", password: "engineer123" },
+      analyst: { email: "analyst@sap.com", password: "analyst123" },
+      demo: { email: "demo@sap.com", password: "demo123" },
     };
     const cred = credentials[role];
     if (cred) {
@@ -49,8 +49,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[url('/images/hero-bg.jpg')] bg-cover bg-center relative">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+    <div className="min-h-screen flex items-center justify-center bg-[url('/images/login-bg.png')] bg-cover bg-center relative">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-md" />
       
       <Card className="w-full max-w-md glass-panel border-white/10 relative z-10 animate-in fade-in zoom-in duration-500">
         <CardHeader className="space-y-1 text-center">
@@ -59,9 +59,9 @@ export default function Login() {
               <BrainCircuit className="w-7 h-7 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-display font-bold tracking-wide">Welcome to IMSOP</CardTitle>
+          <CardTitle className="text-2xl font-display font-bold tracking-wide">SAP BTP Learning App</CardTitle>
           <CardDescription className="text-muted-foreground">
-            Intelligent Multi-Cloud Supply Chain & Operations Platform
+            Master SAP Business Technology Platform with AI-Powered Insights
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -152,8 +152,8 @@ export default function Login() {
           </div>
           
           <div className="mt-6 text-center text-xs text-muted-foreground">
-            <p>Protected by IMSOP Identity Service</p>
-            <p>v2.5.0-stable</p>
+            <p>Powered by SAP BTP AI Hub</p>
+            <p>v1.0.0-stable</p>
           </div>
         </CardContent>
       </Card>

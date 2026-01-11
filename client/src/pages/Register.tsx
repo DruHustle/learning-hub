@@ -37,8 +37,8 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[url('/images/hero-bg.jpg')] bg-cover bg-center relative">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+    <div className="min-h-screen flex items-center justify-center bg-[url('/images/login-bg.png')] bg-cover bg-center relative">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-md" />
       
       <Card className="w-full max-w-md glass-panel border-white/10 relative z-10 animate-in fade-in zoom-in duration-500">
         <CardHeader className="space-y-1 text-center">
@@ -49,7 +49,7 @@ export default function Register() {
           </div>
           <CardTitle className="text-2xl font-display font-bold tracking-wide">Create an Account</CardTitle>
           <CardDescription className="text-muted-foreground">
-            Join the Intelligent Multi-Cloud Supply Chain platform
+            Join the SAP BTP Learning App Community
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -126,8 +126,8 @@ export default function Register() {
           </div>
           
           <div className="mt-6 text-center text-xs text-muted-foreground">
-            <p>Protected by IMSOP Identity Service</p>
-            <p>v2.5.0-stable</p>
+            <p>Powered by SAP BTP AI Hub</p>
+            <p>v1.0.0-stable</p>
           </div>
         </CardContent>
       </Card>
