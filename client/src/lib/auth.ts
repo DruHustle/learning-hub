@@ -1,7 +1,9 @@
 /**
- * Client-side authentication service for GitHub Pages deployment
- * Uses localStorage for demo purposes - in production, connect to your backend API
+ * Client-side authentication service
+ * Uses localStorage for demo accounts and API for real users
  */
+import { safeLocalStorage } from './storage';
+import axios from 'axios';
 
 export interface User {
   id: string;
@@ -9,60 +11,38 @@ export interface User {
   name: string;
   role: 'admin' | 'user';
   avatar?: string;
+  isDemo?: boolean;
 }
 
-interface StoredUser extends User {
-  password: string;
-  resetToken?: string;
-  resetTokenExpiry?: number;
-}
-
-const USERS_KEY = 'imsop_users';
 const SESSION_KEY = 'imsop_session';
-import { safeLocalStorage } from './storage';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
-// Demo users - pre-populated on first load
-const DEMO_USERS: StoredUser[] = [
-  { id: '1', email: 'admin@sap.com', password: 'admin123', name: 'Admin', role: 'admin' },
-  { id: '4', email: 'demo@sap.com', password: 'demo123', name: 'Demo', role: 'user' },
+// Demo users
+const DEMO_USERS = [
+  { id: '1', email: 'admin@sap.com', password: 'admin123', name: 'Admin', role: 'admin', isDemo: true },
+  { id: '4', email: 'demo@sap.com', password: 'demo123', name: 'Demo', role: 'user', isDemo: true },
 ];
 
-// Initialize demo users if not exists
-function initializeUsers(): void {
-  const existing = safeLocalStorage.getItem(USERS_KEY);
-  if (!existing) {
-    safeLocalStorage.setItem(USERS_KEY, JSON.stringify(DEMO_USERS));
+export async function login(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
+  // Check demo users first
+  const demoUser = DEMO_USERS.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+  if (demoUser) {
+    const { password: _, ...sessionUser } = demoUser;
+    safeLocalStorage.setItem(SESSION_KEY, JSON.stringify(sessionUser));
+    return { success: true, user: sessionUser as User };
   }
-}
 
-function getUsers(): StoredUser[] {
-  initializeUsers();
-  const stored = safeLocalStorage.getItem(USERS_KEY);
-  return stored ? JSON.parse(stored) : DEMO_USERS;
-}
-
-function saveUsers(users: StoredUser[]): void {
-  safeLocalStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
-
-export function login(email: string, password: string): { success: boolean; user?: User; error?: string } {
-  const users = getUsers();
-  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
-  
-  if (!user) {
-    return { success: false, error: 'Invalid email or password' };
+  // Try API for real users
+  try {
+    const response = await axios.post(`${API_URL}/api/login`, { email, password });
+    if (response.data.success) {
+      safeLocalStorage.setItem(SESSION_KEY, JSON.stringify(response.data.user));
+      return { success: true, user: response.data.user };
+    }
+    return { success: false, error: 'Invalid credentials' };
+  } catch (error: any) {
+    return { success: false, error: error.response?.data?.error || 'Login failed' };
   }
-  
-  const sessionUser: User = {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-    avatar: user.avatar,
-  };
-  
-  safeLocalStorage.setItem(SESSION_KEY, JSON.stringify(sessionUser));
-  return { success: true, user: sessionUser };
 }
 
 export function logout(): void {
@@ -72,7 +52,6 @@ export function logout(): void {
 export function getCurrentUser(): User | null {
   const session = safeLocalStorage.getItem(SESSION_KEY);
   if (!session) return null;
-  
   try {
     return JSON.parse(session);
   } catch {
@@ -80,116 +59,36 @@ export function getCurrentUser(): User | null {
   }
 }
 
-export function isAuthenticated(): boolean {
-  return getCurrentUser() !== null;
+export async function register(email: string, password: string, name: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await axios.post(`${API_URL}/api/register`, { email, password, name });
+    return { success: response.data.success };
+  } catch (error: any) {
+    return { success: false, error: error.response?.data?.error || 'Registration failed' };
+  }
 }
 
-export function register(email: string, password: string, name: string): { success: boolean; error?: string } {
-  const users = getUsers();
-  
-  if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-    return { success: false, error: 'Email already registered' };
+export async function getProgress(userId: string, isDemo: boolean) {
+  if (isDemo) {
+    const saved = safeLocalStorage.getItem(`progress_${userId}`);
+    return saved ? JSON.parse(saved) : { completedTutorials: [] };
   }
-  
-  const newUser: StoredUser = {
-    id: String(Date.now()),
-    email,
-    password,
-    name,
-    role: 'user',
-  };
-  
-  users.push(newUser);
-  saveUsers(users);
-  
-  return { success: true };
+  try {
+    const response = await axios.get(`${API_URL}/api/progress/${userId}`);
+    return response.data;
+  } catch {
+    return { completedTutorials: [] };
+  }
 }
 
-export function requestPasswordReset(email: string): { success: boolean; token?: string; error?: string } {
-  const users = getUsers();
-  const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
-  
-  if (userIndex === -1) {
-    // Don't reveal if email exists or not for security
-    return { success: true };
+export async function saveProgress(userId: string, isDemo: boolean, progress: any) {
+  if (isDemo) {
+    safeLocalStorage.setItem(`progress_${userId}`, JSON.stringify(progress));
+    return;
   }
-  
-  // Generate a simple reset token (in production, use crypto)
-  const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
-  const expiry = Date.now() + 3600000; // 1 hour
-  
-  users[userIndex].resetToken = token;
-  users[userIndex].resetTokenExpiry = expiry;
-  saveUsers(users);
-  
-  // In a real app, you would send an email here
-  // For demo, we return the token directly
-  return { success: true, token };
-}
-
-export function resetPassword(token: string, newPassword: string): { success: boolean; error?: string } {
-  const users = getUsers();
-  const userIndex = users.findIndex(u => u.resetToken === token);
-  
-  if (userIndex === -1) {
-    return { success: false, error: 'Invalid or expired reset token' };
+  try {
+    await axios.post(`${API_URL}/api/progress/${userId}`, progress);
+  } catch (error) {
+    console.error('Failed to save progress to API', error);
   }
-  
-  const user = users[userIndex];
-  
-  if (user.resetTokenExpiry && user.resetTokenExpiry < Date.now()) {
-    return { success: false, error: 'Reset token has expired' };
-  }
-  
-  users[userIndex].password = newPassword;
-  users[userIndex].resetToken = undefined;
-  users[userIndex].resetTokenExpiry = undefined;
-  saveUsers(users);
-  
-  return { success: true };
-}
-
-export function updateProfile(userId: string, updates: Partial<Pick<User, 'name' | 'avatar'>>): { success: boolean; user?: User; error?: string } {
-  const users = getUsers();
-  const userIndex = users.findIndex(u => u.id === userId);
-  
-  if (userIndex === -1) {
-    return { success: false, error: 'User not found' };
-  }
-  
-  if (updates.name) users[userIndex].name = updates.name;
-  if (updates.avatar) users[userIndex].avatar = updates.avatar;
-  
-  saveUsers(users);
-  
-  const updatedUser: User = {
-    id: users[userIndex].id,
-    email: users[userIndex].email,
-    name: users[userIndex].name,
-    role: users[userIndex].role,
-    avatar: users[userIndex].avatar,
-  };
-  
-  // Update session
-  safeLocalStorage.setItem(SESSION_KEY, JSON.stringify(updatedUser));
-  
-  return { success: true, user: updatedUser };
-}
-
-export function changePassword(userId: string, currentPassword: string, newPassword: string): { success: boolean; error?: string } {
-  const users = getUsers();
-  const userIndex = users.findIndex(u => u.id === userId);
-  
-  if (userIndex === -1) {
-    return { success: false, error: 'User not found' };
-  }
-  
-  if (users[userIndex].password !== currentPassword) {
-    return { success: false, error: 'Current password is incorrect' };
-  }
-  
-  users[userIndex].password = newPassword;
-  saveUsers(users);
-  
-  return { success: true };
 }

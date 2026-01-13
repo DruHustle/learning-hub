@@ -52,6 +52,7 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/tutorials", label: "Tutorials" },
     { href: "/playground", label: "Playground" },
     { href: "/architecture", label: "Architecture" },
+    { href: "/analytics", label: "Analytics" },
     { href: "/about", label: "About" },
   ];
 
@@ -118,12 +119,19 @@ export default function Layout({ children }: LayoutProps) {
                 </Button>
               </div>
             ) : (
-              <Link href="/login">
-                <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-500 gap-2 ml-2 shadow-[0_0_15px_rgba(37,99,235,0.4)]">
-                  <LogIn className="w-4 h-4" />
-                  Sign In
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2 ml-2">
+                <Link href="/login">
+                  <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white hover:bg-white/5 gap-2">
+                    <LogIn className="w-4 h-4" />
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-500 gap-2 shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
             )}
 
             <a
@@ -250,6 +258,7 @@ export default function Layout({ children }: LayoutProps) {
                 <li><Link href="/tutorials"><span className="hover:text-blue-400 cursor-pointer">All Tutorials</span></Link></li>
                 <li><Link href="/playground"><span className="hover:text-blue-400 cursor-pointer">Interactive Playground</span></Link></li>
                 <li><Link href="/architecture"><span className="hover:text-blue-400 cursor-pointer">Architecture Builder</span></Link></li>
+                <li><Link href="/analytics"><span className="hover:text-blue-400 cursor-pointer">Verbal Analytics</span></Link></li>
               </ul>
             </div>
             <div>

@@ -13,6 +13,8 @@ interface AuthContextType {
   resetPassword: (token: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   updateProfile: (updates: Partial<Pick<User, 'name' | 'avatar'>>) => Promise<{ success: boolean; error?: string }>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+  progress: any;
+  markAsCompleted: (tutorialId: number) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,12 +22,45 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(() => {
+    const saved = localStorage.getItem("sap-btp-ai-hub-progress");
+    return saved ? JSON.parse(saved) : { completedTutorials: [] };
+  });
 
   useEffect(() => {
-    const currentUser = authService.getCurrentUser();
-    setUser(currentUser);
-    setLoading(false);
+    const initAuth = async () => {
+      const currentUser = authService.getCurrentUser();
+      setUser(currentUser);
+      
+      if (currentUser) {
+        const savedProgress = await authService.getProgress(currentUser.id, !!currentUser.isDemo);
+        setProgress(savedProgress);
+      } else {
+        const saved = localStorage.getItem("sap-btp-ai-hub-progress");
+        if (saved) setProgress(JSON.parse(saved));
+      }
+      setLoading(false);
+    };
+    initAuth();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      authService.saveProgress(user.id, !!user.isDemo, progress);
+    } else {
+      localStorage.setItem("sap-btp-ai-hub-progress", JSON.stringify(progress));
+    }
+  }, [progress, user]);
+
+  const markAsCompleted = (tutorialId: number) => {
+    setProgress((prev: any) => {
+      if (prev.completedTutorials.includes(tutorialId)) return prev;
+      return {
+        ...prev,
+        completedTutorials: [...prev.completedTutorials, tutorialId],
+      };
+    });
+  };
 
   // Return a Promise
   const login = async (email: string, password: string) => {
@@ -80,6 +115,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         resetPassword,
         updateProfile,
         changePassword,
+        progress,
+        markAsCompleted,
       }}
     >
       {children}

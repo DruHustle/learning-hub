@@ -48,7 +48,7 @@ const handleLogin = async (e: React.FormEvent) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[url('/images/login-bg.png')] bg-cover bg-center relative">
+    <div className="min-h-screen flex items-center justify-center bg-[url('./images/login-bg.png')] bg-cover bg-center relative">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-md" />
       
       <Card className="w-full max-w-md glass-panel border-white/10 relative z-10 animate-in fade-in zoom-in duration-500">

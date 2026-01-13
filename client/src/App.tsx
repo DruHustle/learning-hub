@@ -17,6 +17,7 @@ import Tutorials from "./pages/Tutorials";
 import TutorialDetail from "./pages/TutorialDetail";
 import Architecture from "./pages/Architecture";
 import About from "./pages/About";
+import Analytics from "./pages/Analytics";
 
 function AppRouter() {
   const { isAuthenticated, loading } = useAuth();
@@ -44,6 +45,7 @@ function AppRouter() {
               <Route path="/playground" component={Playground} />
               <Route path="/architecture" component={Architecture} />
               <Route path="/about" component={About} />
+              <Route path="/analytics" component={Analytics} />
               <Route component={NotFound} />
             </Switch>
           </Layout>
