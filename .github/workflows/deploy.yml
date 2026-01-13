@@ -44,10 +44,11 @@ jobs:
         with:
           path: dist
 
-  deploy:
+  deploy-pages:
     needs: build
     runs-on: ubuntu-latest
-    environment:
+    if: success()
+    environment: 
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
@@ -56,8 +57,15 @@ jobs:
         uses: actions/deploy-pages@v4
         continue-on-error: true
 
+      - name: Deployment Success
+        run: |
+          echo "✓ Successfully deployed to GitHub Pages"
+          echo "URL: ${{ steps.deployment.outputs.page_url }}"
+
       - name: Rollback on Failure
         if: steps.deployment.outcome == 'failure'
         run: |
           echo "Deployment failed. Rolling back to the last successful deployment..."
           exit 1
+
+

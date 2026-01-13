@@ -1,10 +1,21 @@
 import { Link, useLocation } from "wouter";
-import { Brain, Github, Menu, X, ArrowLeft, GraduationCap } from "lucide-react";
+import { 
+  Brain, 
+  Github, 
+  Menu, 
+  X, 
+  ArrowLeft, 
+  GraduationCap, 
+  LogIn, 
+  LogOut, 
+  User as UserIcon 
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "./ThemeToggle";
 import { SearchDialog } from "./SearchDialog";
+import { useAuth } from "@/contexts/AuthContext"; // Ensure this path is correct
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -14,6 +25,9 @@ export default function Layout({ children }: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [location] = useLocation();
   const [showPortfolioButton, setShowPortfolioButton] = useState(false);
+  
+  // Use the Auth Context
+  const { isAuthenticated, logout, user } = useAuth();
 
   // Check if user came from portfolio
   useEffect(() => {
@@ -81,14 +95,42 @@ export default function Layout({ children }: LayoutProps) {
                 </Link>
               ))}
             </div>
+            
             <SearchDialog />
             <div className="h-6 w-px bg-white/10 mx-2" />
             <ThemeToggle />
+
+            {/* Auth Section */}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-3 ml-2">
+                <div className="flex items-center gap-2 text-slate-300 text-sm font-medium bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                  <UserIcon className="w-4 h-4 text-blue-400" />
+                  <span className="hidden lg:inline">{user?.name}</span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => logout()}
+                  className="text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden xl:inline">Logout</span>
+                </Button>
+              </div>
+            ) : (
+              <Link href="/login">
+                <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-500 gap-2 ml-2 shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+                  <LogIn className="w-4 h-4" />
+                  Sign In
+                </Button>
+              </Link>
+            )}
+
             <a
               href="https://github.com/DruHustle/sap-btp-ai-hub"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-400 hover:text-white transition-colors"
+              className="ml-2 text-slate-400 hover:text-white transition-colors"
             >
               <Github className="w-5 h-5" />
             </a>
@@ -118,6 +160,27 @@ export default function Layout({ children }: LayoutProps) {
             className="md:hidden border-b border-white/5 bg-[#001A33]"
           >
             <div className="container py-4 flex flex-col gap-4">
+              {/* Mobile Auth Section */}
+              {isAuthenticated ? (
+                <div className="flex items-center justify-between py-2 border-b border-white/5">
+                  <span className="text-blue-400 text-sm font-bold flex items-center gap-2">
+                    <UserIcon className="w-4 h-4" /> {user?.name}
+                  </span>
+                  <button 
+                    onClick={() => logout()} 
+                    className="text-red-400 text-sm flex items-center gap-2 font-medium"
+                  >
+                    <LogOut className="w-4 h-4" /> Logout
+                  </button>
+                </div>
+              ) : (
+                <Link href="/login">
+                  <div className="flex items-center gap-2 text-blue-400 font-bold py-2 border-b border-white/5 cursor-pointer">
+                    <LogIn className="w-4 h-4" /> Sign In / Create Account
+                  </div>
+                </Link>
+              )}
+
               {showPortfolioButton && (
                 <a 
                   href="https://druhustle.github.io/portifolio/" 

@@ -10,29 +10,30 @@ import { useLocation } from "wouter";
 
 export default function Login() {
   const { login } = useAuth();
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
 
-    try {
-      const result = await login(email, password);
-      if (result.success) {
-        toast.success("Login successful!");
-      } else {
-        toast.error(result.error || "Login failed");
-      }
-    } catch (error) {
-      toast.error("Network error. Please try again.");
-    } finally {
-      setIsLoading(false);
+  try {
+    const result = await login(email, password);
+    if (result.success) {
+      toast.success("Login successful!");
+      navigate("/"); 
+    } else {
+      toast.error(result.error || "Login failed");
     }
-  };
+  } catch (error) {
+    toast.error("Network error. Please try again.");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const fillDemoCredentials = (role: string) => {
     const credentials: Record<string, { email: string; password: string }> = {
@@ -141,11 +142,6 @@ export default function Login() {
                 Demo
               </Button>
             </div>
-          </div>
-          
-          <div className="mt-6 text-center text-xs text-muted-foreground">
-            <p>Powered by Learning Hub</p>
-            <p>v1.0.0-stable</p>
           </div>
         </CardContent>
       </Card>

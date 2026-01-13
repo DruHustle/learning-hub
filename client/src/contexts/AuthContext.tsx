@@ -22,14 +22,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session on mount
     const currentUser = authService.getCurrentUser();
     setUser(currentUser);
     setLoading(false);
   }, []);
 
-  const login = (email: string, password: string) => {
-    const result = authService.login(email, password);
+  // Return a Promise
+  const login = async (email: string, password: string) => {
+    const result = await authService.login(email, password); 
     if (result.success && result.user) {
       setUser(result.user);
     }

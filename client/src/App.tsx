@@ -29,32 +29,26 @@ function AppRouter() {
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <WouterRouter hook={useHashLocation}>
-        <Switch>
-          <Route path="/login" component={Login} />
-          <Route path="/register" component={Register} />
-          <Route component={Login} />
-        </Switch>
-      </WouterRouter>
-    );
-  }
-
   return (
     <WouterRouter hook={useHashLocation}>
-      <Layout>
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/tutorials" component={Tutorials} />
-          <Route path="/tutorials/:id" component={TutorialDetail} />
-          <Route path="/playground" component={Playground} />
-          <Route path="/architecture" component={Architecture} />
-          <Route path="/about" component={About} />
-          <Route path="/404" component={NotFound} />
-          <Route component={NotFound} />
-        </Switch>
-      </Layout>
+      <Switch>
+        <Route path="/login" component={Login} />
+        <Route path="/register" component={Register} />
+
+        <Route path="/:rest*">
+          <Layout>
+            <Switch>
+              <Route path="/" component={Home} />
+              <Route path="/tutorials" component={Tutorials} />
+              <Route path="/tutorials/:id" component={TutorialDetail} />
+              <Route path="/playground" component={Playground} />
+              <Route path="/architecture" component={Architecture} />
+              <Route path="/about" component={About} />
+              <Route component={NotFound} />
+            </Switch>
+          </Layout>
+        </Route>
+      </Switch>
     </WouterRouter>
   );
 }

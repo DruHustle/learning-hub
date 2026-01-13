@@ -2,19 +2,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BrainCircuit, Lock, Mail, User, Eye, EyeOff } from "lucide-react";
+import { BrainCircuit, Lock, Mail, User, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { useLocation, Link } from "wouter";
+import { useLocation } from "wouter";
 
 export default function Register() {
-  const { register } = useAuth();
+  const { register, login } = useAuth();
   const [, navigate] = useLocation();
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -22,15 +21,22 @@ export default function Register() {
     setIsLoading(true);
 
     try {
+      // 1. Attempt to register the user
       const result = await register(email, password, name);
+      
       if (result.success) {
-        toast.success("Registration successful! You can now log in.");
-        navigate("/login");
+        toast.success("Account created successfully!");
+        
+        // 2. Automatically log them in after registration
+        const loginResult = await login(email, password);
+        if (loginResult.success) {
+          navigate("/"); // 3. Redirect to home page
+        }
       } else {
         toast.error(result.error || "Registration failed");
       }
     } catch (error) {
-      toast.error("Network error. Please try again.");
+      toast.error("An error occurred during registration.");
     } finally {
       setIsLoading(false);
     }
@@ -40,19 +46,19 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center bg-[url('/images/login-bg.png')] bg-cover bg-center relative">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-md" />
       
-      <Card className="w-full max-w-md glass-panel border-white/10 relative z-10 animate-in fade-in zoom-in duration-500">
+      <Card className="w-full max-w-md glass-panel border-white/10 relative z-10">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="w-12 h-12 rounded bg-primary flex items-center justify-center shadow-[0_0_20px_var(--primary)]">
               <BrainCircuit className="w-7 h-7 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-display font-bold tracking-wide">Create an Account</CardTitle>
-          <CardDescription className="text-muted-foreground">
-            Join the SAP BTP Learning App Community
+          <CardTitle className="text-2xl font-display font-bold">Create Account</CardTitle>
+          <CardDescription>
+            Log in the Learning Hub to track your progress
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
@@ -60,11 +66,10 @@ export default function Register() {
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="name"
-                  type="text"
-                  placeholder="Enter your full name"
+                  placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="pl-10 bg-background/50 border-white/20"
+                  className="pl-10 bg-background/50"
                   required
                 />
               </div>
@@ -77,10 +82,10 @@ export default function Register() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 bg-background/50 border-white/20"
+                  className="pl-10 bg-background/50"
                   required
                 />
               </div>
@@ -92,42 +97,32 @@ export default function Register() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Create a password"
+                  type="password"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 bg-background/50 border-white/20"
+                  className="pl-10 bg-background/50"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
               </div>
             </div>
             
             <Button 
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary/80 text-primary-foreground shadow-[0_0_15px_var(--primary)]"
+              className="w-full bg-primary"
             >
-              {isLoading ? "Creating account..." : "Sign Up"}
+              {isLoading ? "Creating account..." : "Register"}
             </Button>
           </form>
-          
-          <div className="text-center text-sm">
-            <span className="text-muted-foreground">Already have an account? </span>
-            <Link href="/login">
-              <a className="text-primary hover:underline font-semibold">Sign In</a>
-            </Link>
-          </div>
-          
-          <div className="mt-6 text-center text-xs text-muted-foreground">
-            <p>Powered by Learning Hub</p>
-            <p>v1.0.0-stable</p>
+
+          <div className="mt-4 text-center text-sm">
+            <button
+              onClick={() => navigate('/login')}
+              className="text-muted-foreground hover:text-primary flex items-center justify-center gap-2 w-full"
+            >
+              <ArrowLeft className="w-4 h-4" /> Already have an account? Sign In
+            </button>
           </div>
         </CardContent>
       </Card>
