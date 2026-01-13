@@ -7,7 +7,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'admin' | 'engineer' | 'analyst' | 'user';
+  role: 'admin' | 'user';
   avatar?: string;
 }
 
@@ -23,8 +23,8 @@ import { safeLocalStorage } from './storage';
 
 // Demo users - pre-populated on first load
 const DEMO_USERS: StoredUser[] = [
-  { id: '1', email: 'admin@sap.com', password: 'admin123', name: 'Admin User', role: 'admin' },
-  { id: '4', email: 'demo@sap.com', password: 'demo123', name: 'Demo User', role: 'user' },
+  { id: '1', email: 'admin@sap.com', password: 'admin123', name: 'Admin', role: 'admin' },
+  { id: '4', email: 'demo@sap.com', password: 'demo123', name: 'Demo', role: 'user' },
 ];
 
 // Initialize demo users if not exists
