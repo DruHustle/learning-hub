@@ -126,7 +126,7 @@ export default function Register() {
           </div>
           
           <div className="mt-6 text-center text-xs text-muted-foreground">
-            <p>Powered by SAP BTP AI Hub</p>
+            <p>Powered by Learning Hub</p>
             <p>v1.0.0-stable</p>
           </div>
         </CardContent>

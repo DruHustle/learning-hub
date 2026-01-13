@@ -9,7 +9,7 @@
 
 ## Overview
 
-This document outlines the SOLID principles implementation in the SAP BTP AI Learning Hub. Recent refactoring has introduced a proper service layer to improve maintainability, testability, and extensibility.
+This document outlines the SOLID principles implementation in the Learning Hub. Recent refactoring has introduced a proper service layer to improve maintainability, testability, and extensibility.
 
 ---
 

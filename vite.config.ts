@@ -13,8 +13,8 @@ const plugins = [
     registerType: 'prompt', // Changed from autoUpdate to prompt for better control
     includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
     manifest: {
-      name: 'SAP BTP AI Learning Hub',
-      short_name: 'SAP AI Hub',
+      name: 'Learning Hub',
+      short_name: 'Learning Hub',
       description: 'Master AI business solutions on SAP Business Technology Platform',
       theme_color: '#ffffff',
       start_url: './', // CRITICAL: Relative path for GitHub Pages

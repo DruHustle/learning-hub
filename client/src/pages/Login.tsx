@@ -37,8 +37,6 @@ export default function Login() {
   const fillDemoCredentials = (role: string) => {
     const credentials: Record<string, { email: string; password: string }> = {
       admin: { email: "admin@sap.com", password: "admin123" },
-      engineer: { email: "engineer@sap.com", password: "engineer123" },
-      analyst: { email: "analyst@sap.com", password: "analyst123" },
       demo: { email: "demo@sap.com", password: "demo123" },
     };
     const cred = credentials[role];
@@ -59,7 +57,7 @@ export default function Login() {
               <BrainCircuit className="w-7 h-7 text-primary-foreground" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-display font-bold tracking-wide">SAP BTP Learning App</CardTitle>
+          <CardTitle className="text-2xl font-display font-bold tracking-wide">Learning Hub App</CardTitle>
           <CardDescription className="text-muted-foreground">
             Master SAP Business Technology Platform with AI-Powered Insights
           </CardDescription>
@@ -139,12 +137,6 @@ export default function Login() {
               <Button variant="outline" size="sm" onClick={() => fillDemoCredentials("admin")} className="text-xs">
                 Admin
               </Button>
-              <Button variant="outline" size="sm" onClick={() => fillDemoCredentials("engineer")} className="text-xs">
-                Engineer
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => fillDemoCredentials("analyst")} className="text-xs">
-                Analyst
-              </Button>
               <Button variant="outline" size="sm" onClick={() => fillDemoCredentials("demo")} className="text-xs">
                 Demo
               </Button>
@@ -152,7 +144,7 @@ export default function Login() {
           </div>
           
           <div className="mt-6 text-center text-xs text-muted-foreground">
-            <p>Powered by SAP BTP AI Hub</p>
+            <p>Powered by Learning Hub</p>
             <p>v1.0.0-stable</p>
           </div>
         </CardContent>

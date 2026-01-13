@@ -207,7 +207,7 @@ export default function Layout({ children }: LayoutProps) {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
-            <p>© 2026 SAP BTP AI Learning Hub. Open source educational project.</p>
+            <p>© 2026 Learning Hub. Open source educational project.</p>
             <p>Not affiliated with SAP SE.</p>
           </div>
         </div>

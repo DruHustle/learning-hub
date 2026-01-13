@@ -1,11 +1,11 @@
-# Complete Guide: Deploying SAP BTP AI Learning Hub to GitHub Pages
+# Complete Guide: Deploying Learning Hub to GitHub Pages
 
 **Version:** 2.0.0
 **Author:** Andrew Gotora
 **Email:** [andrewgotora@yahoo.com](mailto:andrewgotora@yahoo.com)
 **Last Updated**: January 9, 2026
 
-This guide provides step-by-step instructions for deploying the SAP BTP AI Learning Hub website to GitHub Pages for permanent, free hosting.
+This guide provides step-by-step instructions for deploying the Learning Hub website to GitHub Pages for permanent, free hosting.
 
 ## 📋 Prerequisites
 
@@ -64,7 +64,7 @@ If this is a new project without git initialized:
 ```bash
 git init
 git add .
-git commit -m "Initial commit: SAP BTP AI Learning Hub"
+git commit -m "Initial commit: Learning Hub"
 ```
 
 #### Step 2.3: Add Remote Repository
@@ -293,7 +293,7 @@ Add a link to your website in your GitHub profile:
 ### Share Your Website
 
 Share your learning hub with others:
-- Twitter: `Check out my SAP BTP AI Learning Hub: https://DruHustle.github.io/sap-btp-ai-hub`
+- Twitter: `Check out my Learning Hub: https://DruHustle.github.io/sap-btp-ai-hub`
 - LinkedIn: Post about your new resource
 - SAP Community: Share in relevant forums
 
@@ -395,6 +395,6 @@ For more information about deploying static sites:
 
 ---
 
-**Congratulations!** Your SAP BTP AI Learning Hub is now live on GitHub Pages and accessible to the world. Share it with your network and help others master AI business solutions on SAP BTP!
+**Congratulations!** Your Learning Hub is now live on GitHub Pages and accessible to the world. Share it with your network and help others master AI business solutions on SAP BTP!
 
 For questions or issues, please refer to the [GitHub Pages Documentation](https://docs.github.com/en/pages) or open an issue in your repository.

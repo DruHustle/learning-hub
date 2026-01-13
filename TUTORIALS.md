@@ -1,4 +1,4 @@
-# SAP BTP AI Learning Hub - Complete Tutorial Guide
+# Learning Hub - Complete Tutorial Guide
 
 **Version:** 2.0.0
 **Author:** Andrew Gotora

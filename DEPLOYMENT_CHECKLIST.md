@@ -1,4 +1,4 @@
-# SAP BTP AI Learning Hub - Deployment Checklist
+# Learning Hub - Deployment Checklist
 
 **Version:** 2.0.0
 **Author:** Andrew Gotora
@@ -62,7 +62,7 @@ Use this checklist to ensure your website is properly deployed and functioning c
 ### Accessibility
 - [ ] Website is accessible at the GitHub Pages URL
 - [ ] Website loads without 404 errors
-- [ ] Page title is correct: "SAP BTP AI Learning Hub"
+- [ ] Page title is correct: "Learning Hub"
 - [ ] Favicon displays correctly
 
 ### Visual Design

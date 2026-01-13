@@ -80,7 +80,7 @@ export default function Certificate({ completedCount, totalCount }: CertificateP
       doc.setFont("helvetica", "bold");
       doc.setFontSize(24);
       doc.setTextColor(0, 112, 242);
-      doc.text("SAP BTP AI Learning Hub Course", 148.5, 138, { align: "center" });
+      doc.text("AI in SAP BTP Course", 148.5, 138, { align: "center" });
 
       // Date
       const date = new Date().toLocaleDateString("en-US", {
@@ -132,7 +132,7 @@ export default function Certificate({ completedCount, totalCount }: CertificateP
         </DialogHeader>
         <div className="space-y-4 py-4">
           <p className="text-center text-muted-foreground">
-            You've successfully completed all tutorials in the SAP BTP AI Learning Hub.
+            You've successfully completed all tutorials in the Learning Hub.
             Enter your name below to generate your personalized certificate.
           </p>
           <div className="space-y-2">
@@ -170,7 +170,7 @@ export default function Certificate({ completedCount, totalCount }: CertificateP
                 <Linkedin className="w-4 h-4 text-blue-600" />
               </Button>
               <Button variant="outline" size="icon" onClick={() => {
-                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent("I just completed the SAP BTP AI Learning Hub course! 🚀 #SAPBTP #AI")}&url=${encodeURIComponent("https://DruHustle.github.io/sap-btp-ai-hub")}`, "_blank");
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent("I just completed the AI in SAP BTP course! 🚀 #SAPBTP #AI")}&url=${encodeURIComponent("https://DruHustle.github.io/sap-btp-ai-hub")}`, "_blank");
               }}>
                 <Twitter className="w-4 h-4 text-sky-500" />
               </Button>

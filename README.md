@@ -1,4 +1,4 @@
-# SAP BTP AI Learning Hub
+# Learning Hub
 
 An interactive learning platform designed to master SAP Business Technology Platform (BTP) AI solutions through hands-on tutorials, AI playgrounds, and architecture builders.
 

@@ -24,8 +24,6 @@ import { safeLocalStorage } from './storage';
 // Demo users - pre-populated on first load
 const DEMO_USERS: StoredUser[] = [
   { id: '1', email: 'admin@sap.com', password: 'admin123', name: 'Admin User', role: 'admin' },
-  { id: '2', email: 'engineer@sap.com', password: 'engineer123', name: 'Engineer User', role: 'engineer' },
-  { id: '3', email: 'analyst@sap.com', password: 'analyst123', name: 'Analyst User', role: 'analyst' },
   { id: '4', email: 'demo@sap.com', password: 'demo123', name: 'Demo User', role: 'user' },
 ];
 

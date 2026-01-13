@@ -46,7 +46,7 @@ export default function About() {
             <h2 className="text-3xl font-bold text-white mb-8 text-center">Our Mission</h2>
             <div className="text-slate-400 leading-relaxed text-justify space-y-6">
               <p>
-                The SAP BTP AI Learning Hub is a comprehensive resource designed to help developers, architects, and business professionals master the art of building AI-powered business solutions on SAP Business Technology Platform. In an era where artificial intelligence is transforming the enterprise landscape, our goal is to provide a structured, accessible, and deeply technical path to proficiency.
+                The Learning Hub is a comprehensive resource designed to help developers, architects, and business professionals master the art of building AI-powered business solutions. In an era where artificial intelligence is transforming the enterprise landscape, our goal is to provide a structured, accessible, and deeply technical path to proficiency.
               </p>
               <p>
                 Whether you're just starting your AI journey or looking to deepen your expertise, this hub provides hands-on tutorials, best practices, and real-world examples to accelerate your learning. We believe that the best way to learn is by doing, which is why every tutorial is grounded in practical implementation and real-world business scenarios.

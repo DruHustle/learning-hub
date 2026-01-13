@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# SAP BTP AI Learning Hub - Deployment Script
+# Learning Hub - Deployment Script
 # This script automates the deployment to GitHub Pages
 
-echo "🚀 Starting deployment for SAP BTP AI Learning Hub..."
+echo "🚀 Starting deployment for Learning Hub..."
 
 # Check if git is installed
 if ! command -v git &> /dev/null; then
@@ -22,7 +22,7 @@ if [ ! -d ".git" ]; then
     echo "📦 Initializing git repository..."
     git init
     git add .
-    git commit -m "Initial commit: SAP BTP AI Learning Hub Pro"
+    git commit -m "Initial commit: Learning Hub Pro"
 fi
 
 # Ask for GitHub username if not already configured in remote
