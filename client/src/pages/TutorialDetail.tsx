@@ -32,8 +32,7 @@ export default function TutorialDetail() {
 
       try {
         setLoading(true);
-        const baseUrl = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
-        const response = await fetch(`${baseUrl}TUTORIALS.md`);
+        const response = await fetch(`./TUTORIALS.md`);
         
         if (!response.ok) throw new Error("Failed to load tutorial content");
 

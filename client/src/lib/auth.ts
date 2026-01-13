@@ -68,6 +68,22 @@ export async function register(email: string, password: string, name: string): P
   }
 }
 
+export function requestPasswordReset(email: string): { success: boolean; token?: string; error?: string } {
+  return { success: true }; // Mock for now
+}
+
+export function resetPassword(token: string, newPassword: string): { success: boolean; error?: string } {
+  return { success: true }; // Mock for now
+}
+
+export function updateProfile(userId: string, updates: any): { success: boolean; user?: User; error?: string } {
+  return { success: true }; // Mock for now
+}
+
+export function changePassword(userId: string, currentPassword: string, newPassword: string): { success: boolean; error?: string } {
+  return { success: true }; // Mock for now
+}
+
 export async function getProgress(userId: string, isDemo: boolean) {
   if (isDemo) {
     const saved = safeLocalStorage.getItem(`progress_${userId}`);

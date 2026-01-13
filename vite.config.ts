@@ -41,7 +41,7 @@ const plugins = [
 
 export default defineConfig({
   plugins ,
-  base:  "/sap-btp-ai-hub/", // CRITICAL: Fix for GitHub Pages asset loading
+  base:  "./", // CRITICAL: Relative path for GitHub Pages asset loading
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
