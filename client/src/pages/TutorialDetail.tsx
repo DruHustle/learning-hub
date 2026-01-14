@@ -20,6 +20,8 @@ export default function TutorialDetail() {
   const [showQuiz, setShowQuiz] = useState(false);
   const [readingTime, setReadingTime] = useState(0);
   const { markAsCompleted, isCompleted } = useProgress();
+  const { isAuthenticated } = useAuth();
+  const [, navigate] = useLocation();
 
   const tutorialId = params?.id;
   const id = tutorialId ? parseInt(tutorialId) : 0;
@@ -184,6 +186,11 @@ export default function TutorialDetail() {
                       tutorialId={id} 
                       questions={quizQuestions} 
                       onComplete={() => {
+                        if (!isAuthenticated) {
+                          toast.info("Please sign in to save your quiz results and track progress");
+                          navigate("/login");
+                          return;
+                        }
                         markAsCompleted(id);
                         toast.success("Tutorial completed! Great job!");
                         setShowQuiz(false);
@@ -225,6 +232,11 @@ export default function TutorialDetail() {
                   <Button 
                     size="lg"
                     onClick={() => {
+                      if (!isAuthenticated) {
+                        toast.info("Please sign in to track your progress");
+                        navigate("/login");
+                        return;
+                      }
                       markAsCompleted(id);
                       toast.success("Tutorial marked as completed!");
                     }}

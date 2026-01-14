@@ -20,7 +20,7 @@ import About from "./pages/About";
 import Analytics from "./pages/Analytics";
 
 function AppRouter() {
-  const { isAuthenticated, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return (
@@ -33,22 +33,36 @@ function AppRouter() {
   return (
     <WouterRouter hook={useHashLocation}>
       <Switch>
+        {/* Main Application Routes */}
+        <Route path="/">
+          <Layout><Home /></Layout>
+        </Route>
+        <Route path="/tutorials">
+          <Layout><Tutorials /></Layout>
+        </Route>
+        <Route path="/tutorials/:id">
+          <Layout><TutorialDetail /></Layout>
+        </Route>
+        <Route path="/playground">
+          <Layout><Playground /></Layout>
+        </Route>
+        <Route path="/architecture">
+          <Layout><Architecture /></Layout>
+        </Route>
+        <Route path="/about">
+          <Layout><About /></Layout>
+        </Route>
+        <Route path="/analytics">
+          <Layout><Analytics /></Layout>
+        </Route>
+
+        {/* Auth Routes */}
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
 
-        <Route path="/:rest*">
-          <Layout>
-            <Switch>
-              <Route path="/" component={Home} />
-              <Route path="/tutorials" component={Tutorials} />
-              <Route path="/tutorials/:id" component={TutorialDetail} />
-              <Route path="/playground" component={Playground} />
-              <Route path="/architecture" component={Architecture} />
-              <Route path="/about" component={About} />
-              <Route path="/analytics" component={Analytics} />
-              <Route component={NotFound} />
-            </Switch>
-          </Layout>
+        {/* Fallback */}
+        <Route>
+          <Layout><NotFound /></Layout>
         </Route>
       </Switch>
     </WouterRouter>

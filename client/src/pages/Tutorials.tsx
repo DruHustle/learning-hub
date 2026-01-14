@@ -160,8 +160,9 @@ export default function Tutorials() {
         </div>
       </div>
 
-   {/* Grid Section - Light Blue Background */}
-164	      <div className="container py-12 md:py-20 bg-[#E0F2FE] border-y border-blue-100 max-w-full">        <div className="max-w-6xl mx-auto">
+      {/* Grid Section - Light Blue Background */}
+      <div className="container py-12 md:py-20 bg-[#E0F2FE] border-y border-blue-100 max-w-full">
+        <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredTutorials.map((tutorial, index) => (
               <TutorialCard key={tutorial.id} {...tutorial} index={index} />
