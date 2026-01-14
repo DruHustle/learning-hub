@@ -4,7 +4,7 @@
 
 set -e  # Exit on any error
 
-echo "🚀 Starting deployment for Learning Hub (SAP BTP AI Hub)..."
+echo "🚀 Starting deployment for Learning Hub ..."
 
 # Colors for output
 RED='\033[0;31m'
