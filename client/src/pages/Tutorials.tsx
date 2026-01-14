@@ -17,6 +17,7 @@ const tutorials = [
     duration: "15 min",
     icon: BookOpen,
     color: "from-blue-500 to-blue-600",
+    tags: ["SAP BTP"],
   },
   {
     id: 2,
@@ -26,6 +27,7 @@ const tutorials = [
     duration: "20 min",
     icon: Zap,
     color: "from-cyan-500 to-cyan-600",
+    tags: ["SAP BTP"],
   },
   {
     id: 3,
@@ -35,6 +37,7 @@ const tutorials = [
     duration: "45 min",
     icon: Brain,
     color: "from-indigo-500 to-indigo-600",
+    tags: ["SAP BTP"],
   },
   {
     id: 4,
@@ -44,6 +47,7 @@ const tutorials = [
     duration: "50 min",
     icon: Users,
     color: "from-blue-500 to-blue-600",
+    tags: ["SAP BTP"],
   },
   {
     id: 5,
@@ -53,6 +57,7 @@ const tutorials = [
     duration: "40 min",
     icon: FileText,
     color: "from-cyan-500 to-cyan-600",
+    tags: ["SAP BTP"],
   },
   {
     id: 6,
@@ -62,6 +67,7 @@ const tutorials = [
     duration: "60 min",
     icon: Code2,
     color: "from-indigo-500 to-indigo-600",
+    tags: ["SAP BTP"],
   },
 ];
 

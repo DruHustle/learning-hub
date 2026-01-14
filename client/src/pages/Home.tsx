@@ -14,6 +14,7 @@ export default function Home() {
       duration: "15 min",
       icon: BookOpen,
       color: "from-blue-500/20 to-blue-600/20 text-blue-400",
+      tags: ["SAP BTP"],
     },
     {
       id: 2,
@@ -23,6 +24,7 @@ export default function Home() {
       duration: "20 min",
       icon: Zap,
       color: "from-cyan-500/20 to-cyan-600/20 text-cyan-400",
+      tags: ["SAP BTP"],
     },
     {
       id: 3,
@@ -32,6 +34,7 @@ export default function Home() {
       duration: "45 min",
       icon: Brain,
       color: "from-indigo-500/20 to-indigo-600/20 text-indigo-400",
+      tags: ["SAP BTP"],
     },
     {
       id: 4,
@@ -41,6 +44,7 @@ export default function Home() {
       duration: "50 min",
       icon: Users,
       color: "from-blue-500/20 to-blue-600/20 text-blue-400",
+      tags: ["SAP BTP"],
     },
     {
       id: 5,
@@ -50,6 +54,7 @@ export default function Home() {
       duration: "40 min",
       icon: FileText,
       color: "from-cyan-500/20 to-cyan-600/20 text-cyan-400",
+      tags: ["SAP BTP"],
     },
     {
       id: 6,
@@ -59,6 +64,7 @@ export default function Home() {
       duration: "60 min",
       icon: Code2,
       color: "from-indigo-500/20 to-indigo-600/20 text-indigo-400",
+      tags: ["SAP BTP"],
     },
   ];
 
@@ -150,6 +156,11 @@ export default function Home() {
 	                  <CardContent className="p-6 flex flex-col h-full">
 	                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${tutorial.color.split(' ').slice(0,2).join(' ')} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
 	                      <Icon className={`w-5 h-5 ${tutorial.color.split(' ').pop()}`} />
+	                    </div>
+	                    <div className="flex flex-wrap gap-1.5 mb-3">
+	                      {tutorial.tags.map((tag) => (
+	                        <span key={tag} className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 text-[11px] font-semibold uppercase tracking-wide">{tag}</span>
+	                      ))}
 	                    </div>
 	                    <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">{tutorial.title}</h3>
 	                    <p className="text-slate-600 text-xs leading-relaxed mb-4 flex-grow">{tutorial.description}</p>

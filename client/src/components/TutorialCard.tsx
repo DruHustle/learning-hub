@@ -15,6 +15,7 @@ interface TutorialCardProps {
   icon: LucideIcon;
   color: string;
   index: number;
+  tags?: string[];
 }
 
 export default function TutorialCard({
@@ -26,6 +27,7 @@ export default function TutorialCard({
   icon: Icon,
   color,
   index,
+  tags = [],
 }: TutorialCardProps) {
   const { isCompleted } = useProgress();
   const completed = isCompleted(id);
@@ -61,6 +63,15 @@ export default function TutorialCard({
               </Badge>
             </div>
           </div>
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {tags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 text-[11px] font-semibold uppercase tracking-wide">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
           <h3 className="text-xl font-bold leading-tight text-slate-900 group-hover:text-blue-600 transition-colors">
             {title}
           </h3>
