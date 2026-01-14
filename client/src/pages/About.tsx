@@ -28,7 +28,7 @@ export default function About() {
               About the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Learning Hub</span>
             </h1>
             <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-              Empowering the next generation of SAP developers with cutting-edge AI knowledge and hands-on expertise.
+              Interactive learning hub for designing, prototyping, and deploying real-world AI solutions using a modern multi-tool ecosystem.
             </p>
           </motion.div>
         </div>
@@ -46,13 +46,13 @@ export default function About() {
             <h2 className="text-3xl font-bold text-white mb-8 text-center">Our Mission</h2>
             <div className="text-slate-400 leading-relaxed text-justify space-y-6">
               <p>
-                The Learning Hub is a comprehensive resource designed to help developers, architects, and business professionals master the art of building AI-powered business solutions. In an era where artificial intelligence is transforming the enterprise landscape, our goal is to provide a structured, accessible, and deeply technical path to proficiency.
+                The Learning Hub is a comprehensive resource designed to help developers, architects, and business professionals master the art of building AI-powered business solutions. In an era where artificial intelligence is transforming the enterprise landscape, our goal is to provide a structured, accessible, and deeply technical path to proficiency across a diverse technological landscape.
               </p>
               <p>
-                Whether you're just starting your AI journey or looking to deepen your expertise, this hub provides hands-on tutorials, best practices, and real-world examples to accelerate your learning. We believe that the best way to learn is by doing, which is why every tutorial is grounded in practical implementation and real-world business scenarios.
+                Whether you're just starting your AI journey or looking to deepen your expertise, this hub provides hands-on tutorials, best practices, and real-world examples to accelerate your learning. We believe that the best way to learn is by doing, which is why every tutorial is grounded in practical implementation and real-world business scenarios using a modern multi-tool ecosystem.
               </p>
               <p>
-                Our content is regularly updated to reflect the latest SAP BTP AI capabilities, including the Generative AI Hub, AI Core, Joule Studio, and Document AI services. We stay at the forefront of SAP's innovation to ensure you have the most relevant and up-to-date information at your fingertips.
+                Our curriculum spans a wide range of industry-leading technologies, including <strong>Python</strong>, <strong>OpenAI</strong>, <strong>NVIDIA CUDA</strong>, <strong>Azure AI</strong>, and <strong>SAP BTP AI Core</strong>. We stay at the forefront of AI/ML innovation to ensure you have the most relevant and up-to-date information at your fingertips, enabling you to design, prototype, and deploy production-grade AI solutions.
               </p>
             </div>
           </motion.section>
@@ -106,14 +106,14 @@ export default function About() {
                   <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
                     <h3 className="text-3xl font-bold text-white">Andrew Gotora</h3>
                     <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 px-3 py-1 w-fit mx-auto md:mx-0">
-                      SAP BTP & AI Specialist
+                      AI & Enterprise Solutions Specialist
                     </Badge>
                   </div>
                   <p className="text-slate-400 font-medium">Helping organizations bridge the gap between AI and Business Value</p>
                 </div>
                 
                 <p className="text-slate-400 leading-relaxed text-justify max-w-2xl">
-                  Passionate about bridging the gap between complex enterprise technology and practical business value. With extensive experience in the SAP ecosystem, I focus on helping organizations leverage AI to drive innovation and efficiency. I believe in the power of community and continuous learning to shape the future of enterprise software.
+                  Passionate about bridging the gap between complex enterprise technology and practical business value. With extensive experience across a diverse AI/ML stack, I focus on helping organizations leverage a multi-tool ecosystem to drive innovation and efficiency. I believe in the power of community and continuous learning to shape the future of enterprise software.
                 </p>
 
                 <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-2">

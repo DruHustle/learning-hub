@@ -230,11 +230,10 @@ export default function Layout({ children }: LayoutProps) {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Brain className="w-5 h-5 text-blue-400" />
-                <span className="font-bold text-white">SAP BTP AI Hub</span>
+                <span className="font-bold text-white">Learning Hub</span>
               </div>
               <p className="text-sm text-slate-400 leading-relaxed">
-                Master AI business solutions on SAP Business Technology Platform.
-                Built for developers, by developers.
+                Interactive learning hub for designing, prototyping, and deploying real-world AI solutions using a modern multi-tool ecosystem.
               </p>
             </div>
             <div>

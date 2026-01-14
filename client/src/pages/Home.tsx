@@ -79,11 +79,11 @@ export default function Home() {
             </div>
             
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
-              Master AI Solutions on <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">SAP BTP</span>
+              Master AI Solutions on <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Learning Hub</span>
             </h1>
             
             <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-              Learn hands-on how to build, deploy, and integrate AI-powered solutions using SAP Business Technology Platform.
+              Interactive learning hub for designing, prototyping, and deploying real-world AI solutions using a modern multi-tool ecosystem.
             </p>
             
             <div className="flex flex-wrap gap-4 justify-center pt-4">
@@ -113,9 +113,9 @@ export default function Home() {
         <div className="container">
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { title: "Enterprise Integration", desc: "Seamlessly integrate AI with your existing SAP systems and data.", icon: Sparkles, color: "bg-blue-500/10 text-blue-400" },
-              { title: "Governance & Security", desc: "Built-in compliance and security for enterprise-grade AI.", icon: ShieldCheck, color: "bg-cyan-500/10 text-cyan-400" },
-              { title: "Business Context", desc: "Leverage your business data to create contextual AI solutions.", icon: Database, color: "bg-indigo-500/10 text-indigo-400" },
+              { title: "Multi-Tool Ecosystem", desc: "Master a diverse stack including Python, OpenAI, Azure AI, and SAP BTP AI Core.", icon: Sparkles, color: "bg-blue-500/10 text-blue-400" },
+              { title: "Enterprise AI/ML", desc: "Learn to build production-grade machine learning solutions with NVIDIA CUDA and modern frameworks.", icon: ShieldCheck, color: "bg-cyan-500/10 text-cyan-400" },
+              { title: "Real-World Prototyping", desc: "Go beyond theory with hands-on labs for designing and deploying contextual AI solutions.", icon: Database, color: "bg-indigo-500/10 text-indigo-400" },
             ].map((item, idx) => (
               <div key={idx} className="p-6 rounded-2xl border border-white/5 bg-white/5 hover:bg-white/10 transition-all group">
                 <div className={`w-12 h-12 rounded-xl ${item.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>

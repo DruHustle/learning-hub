@@ -15,7 +15,7 @@ const plugins = [
     manifest: {
       name: 'Learning Hub',
       short_name: 'Learning Hub',
-      description: 'Master AI business solutions on SAP Business Technology Platform',
+      description: 'Interactive learning hub for designing, prototyping, and deploying real-world AI solutions using a modern multi-tool ecosystem.',
       theme_color: '#ffffff',
       start_url: './', // CRITICAL: Relative path for GitHub Pages
       scope: './',      // CRITICAL: Relative path for GitHub Pages
