@@ -24,7 +24,8 @@ async function startServer() {
     const { email, password, name } = req.body;
     try {
       const id = nanoid();
-      await db.insert(users).values({ id, email, password, name });
+      const normalizedEmail = email.trim().toLowerCase();
+      await db.insert(users).values({ id, email: normalizedEmail, password, name });
       // Initialize progress
       await db.insert(progress).values({ userId: id, completedTutorials: [] });
       res.json({ success: true, user: { id, email, name, role: "user" } });
@@ -37,7 +38,7 @@ async function startServer() {
     if (!db) return res.status(500).json({ error: "Database not connected" });
     const { email, password } = req.body;
     try {
-      const [user] = await db.select().from(users).where(eq(users.email, email));
+      const [user] = await db.select().from(users).where(eq(users.email, email.trim().toLowerCase()));
       if (!user || user.password !== password) {
         return res.status(401).json({ error: "Invalid credentials" });
       }

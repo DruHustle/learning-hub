@@ -25,7 +25,7 @@ const DEMO_USERS = [
 
 export async function login(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
   // Check demo users first
-  const demoUser = DEMO_USERS.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+  const demoUser = DEMO_USERS.find(u => u.email.trim().toLowerCase() === email.trim().toLowerCase() && u.password === password);
   if (demoUser) {
     const { password: _, ...sessionUser } = demoUser;
     safeLocalStorage.setItem(SESSION_KEY, JSON.stringify(sessionUser));

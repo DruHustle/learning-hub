@@ -13,7 +13,7 @@ import {
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { ThemeToggle } from "./ThemeToggle";
+// ThemeToggle removed
 import { SearchDialog } from "./SearchDialog";
 import { useAuth } from "@/contexts/AuthContext"; // Ensure this path is correct
 
@@ -99,7 +99,7 @@ export default function Layout({ children }: LayoutProps) {
             
             <SearchDialog />
             <div className="h-6 w-px bg-white/10 mx-2" />
-            <ThemeToggle />
+{/* ThemeToggle removed */}
 
             {/* Auth Section */}
             {isAuthenticated ? (
@@ -134,20 +134,13 @@ export default function Layout({ children }: LayoutProps) {
               </div>
             )}
 
-            <a
-              href="https://github.com/DruHustle/sap-btp-ai-hub"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ml-2 text-slate-400 hover:text-white transition-colors"
-            >
-              <Github className="w-5 h-5" />
-            </a>
+{/* GitHub icon removed */}
           </nav>
 
           {/* Mobile Menu Toggle */}
           <div className="flex items-center gap-2 md:hidden">
             <SearchDialog />
-            <ThemeToggle />
+{/* ThemeToggle removed */}
             <button
               className="p-2 text-slate-400 hover:text-white"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -209,15 +202,7 @@ export default function Layout({ children }: LayoutProps) {
                   </div>
                 </Link>
               ))}
-              <a
-                href="https://github.com/DruHustle/sap-btp-ai-hub"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm font-medium text-slate-400 py-2"
-              >
-                <Github className="w-4 h-4" />
-                GitHub Repository
-              </a>
+{/* GitHub Repository link removed */}
             </div>
           </motion.div>
         )}
