@@ -15,7 +15,6 @@ import Tutorials from "./pages/Tutorials";
 import TutorialDetail from "./pages/TutorialDetail";
 import Architecture from "./pages/Architecture";
 import About from "./pages/About";
-import Analytics from "./pages/Analytics";
 
 function AppRouter() {
   return (
@@ -39,9 +38,6 @@ function AppRouter() {
         </Route>
         <Route path="/about">
           <Layout><About /></Layout>
-        </Route>
-        <Route path="/analytics">
-          <Layout><Analytics /></Layout>
         </Route>
         {/* Auth Routes */}
         <Route path="/login" component={Login} />

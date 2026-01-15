@@ -52,7 +52,6 @@ export default function Layout({ children }: LayoutProps) {
     { href: "/tutorials", label: "Tutorials" },
     { href: "/playground", label: "Playground" },
     { href: "/architecture", label: "Architecture" },
-    { href: "/analytics", label: "Analytics" },
     { href: "/about", label: "About" },
   ];
 
@@ -134,13 +133,13 @@ export default function Layout({ children }: LayoutProps) {
               </div>
             )}
 
-{/* GitHub icon removed */}
+
           </nav>
 
           {/* Mobile Menu Toggle */}
           <div className="flex items-center gap-2 md:hidden">
             <SearchDialog />
-{/* ThemeToggle removed */}
+
             <button
               className="p-2 text-slate-400 hover:text-white"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -202,7 +201,7 @@ export default function Layout({ children }: LayoutProps) {
                   </div>
                 </Link>
               ))}
-{/* GitHub Repository link removed */}
+
             </div>
           </motion.div>
         )}
