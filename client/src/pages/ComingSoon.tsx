@@ -77,7 +77,7 @@ export default function ComingSoon({ error, resetError, isDevelopment = false }:
 
           {/* Footer */}
           <div className="text-xs text-slate-500 pt-4">
-            <p>SAP BTP AI Hub v1.0.0</p>
+            <p>Learning Hub v1.0.0</p>
           </div>
         </div>
       </div>
