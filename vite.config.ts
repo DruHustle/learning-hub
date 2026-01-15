@@ -10,15 +10,16 @@ const plugins = [
   tailwindcss(), 
   jsxLocPlugin(), 
   VitePWA({
-    registerType: 'prompt', // Changed from autoUpdate to prompt for better control
+    registerType: 'prompt',
     includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
     manifest: {
       name: 'Learning Hub',
       short_name: 'Learning Hub',
       description: 'Interactive learning hub for designing, prototyping, and deploying real-world AI solutions using a modern multi-tool ecosystem.',
       theme_color: '#ffffff',
-      start_url: './', // CRITICAL: Relative path for GitHub Pages
-      scope: './',      // CRITICAL: Relative path for GitHub Pages
+      // For Hash Routing, the start_url is just the base path
+      start_url: '/sap-btp-ai-hub/', 
+      scope: '/sap-btp-ai-hub/',      
       icons: [
         {
           src: 'pwa-192x192.png',
@@ -33,15 +34,18 @@ const plugins = [
       ]
     },
     workbox: {
-      maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4MB
-      navigateFallback: null // CRITICAL: Disable navigateFallback for GitHub Pages to avoid 404s
+      maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+      // With Hash Routing, we don't need a navigateFallback 404 hack
+      navigateFallback: null 
     }
   })
 ];
 
 export default defineConfig({
-  plugins ,
-  base:  "./", // CRITICAL: Relative path for GitHub Pages asset loading
+  plugins,
+  // This ensures assets (JS/CSS) are loaded from /sap-btp-ai-hub/assets/
+  base: "/sap-btp-ai-hub/", 
+  
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -50,18 +54,14 @@ export default defineConfig({
     },
   },
 
-
   envDir: path.resolve(import.meta.dirname),
   
   root: path.resolve(import.meta.dirname, "client"),
   build: {
-      // This tells Vite to put the final files in /dist at the project root
       outDir: path.resolve(import.meta.dirname, "dist"),
       emptyOutDir: true,
-      // Ensures assets are generated with relative paths
       assetsDir: 'assets',
     },
-
 
   server: {
     port: 3000,
