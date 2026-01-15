@@ -242,7 +242,6 @@ export default function Layout({ children }: LayoutProps) {
                 <li><Link href="/tutorials"><span className="hover:text-blue-400 cursor-pointer">All Tutorials</span></Link></li>
                 <li><Link href="/playground"><span className="hover:text-blue-400 cursor-pointer">Interactive Playground</span></Link></li>
                 <li><Link href="/architecture"><span className="hover:text-blue-400 cursor-pointer">Architecture Builder</span></Link></li>
-                <li><Link href="/analytics"><span className="hover:text-blue-400 cursor-pointer">Verbal Analytics</span></Link></li>
               </ul>
             </div>
             <div>
