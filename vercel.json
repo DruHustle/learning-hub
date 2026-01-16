@@ -1,8 +1,18 @@
 {
+  "version": 2,
   "rewrites": [
+    {
+      "source": "/sap-btp-ai-hub/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/sap-btp-ai-hub/(.*)",
+      "destination": "/$1"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
+
 }
