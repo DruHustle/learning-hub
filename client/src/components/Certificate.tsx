@@ -97,7 +97,7 @@ export default function Certificate({ completedCount, totalCount }: CertificateP
       // Footer
       doc.setFontSize(10);
       doc.setTextColor(148, 163, 184);
-      doc.text("Verify at: https://DruHustle.github.io/sap-btp-ai-hub", 148.5, 190, { align: "center" });
+      doc.text("Verify at: https://DruHustle.github.io/learning-hub", 148.5, 190, { align: "center" });
 
       // Save
       doc.save("SAP_BTP_AI_Certificate.pdf");
@@ -165,12 +165,12 @@ export default function Certificate({ completedCount, totalCount }: CertificateP
             <p className="text-sm text-center text-muted-foreground mb-3">Share your achievement</p>
             <div className="flex gap-2 justify-center">
               <Button variant="outline" size="icon" onClick={() => {
-                window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent("https://DruHustle.github.io/sap-btp-ai-hub")}`, "_blank");
+                window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent("https://DruHustle.github.io/learning-hub")}`, "_blank");
               }}>
                 <Linkedin className="w-4 h-4 text-blue-600" />
               </Button>
               <Button variant="outline" size="icon" onClick={() => {
-                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent("I just completed the AI in SAP BTP course! 🚀 #SAPBTP #AI")}&url=${encodeURIComponent("https://DruHustle.github.io/sap-btp-ai-hub")}`, "_blank");
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent("I just completed the AI in SAP BTP course! 🚀 #SAPBTP #AI")}&url=${encodeURIComponent("https://DruHustle.github.io/learning-hub")}`, "_blank");
               }}>
                 <Twitter className="w-4 h-4 text-sky-500" />
               </Button>

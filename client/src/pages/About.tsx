@@ -94,7 +94,7 @@ export default function About() {
               <div className="relative flex-shrink-0">
                 <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-[#001A33] shadow-2xl overflow-hidden">
                   <img 
-                    src="/sap-btp-ai-hub/images/author.jpg" 
+                    src="/learning-hub/images/author.jpg" 
                     alt="Andrew Gotora" 
                     className="object-cover w-full h-full"
                   />

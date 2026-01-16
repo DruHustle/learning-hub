@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(() => {
-    const saved = localStorage.getItem("sap-btp-ai-hub-progress");
+    const saved = localStorage.getItem("learning-hub-progress");
     return saved ? JSON.parse(saved) : { completedTutorials: [] };
   });
 
@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const savedProgress = await authService.getProgress(currentUser.id, !!currentUser.isDemo);
         setProgress(savedProgress);
       } else {
-        const saved = localStorage.getItem("sap-btp-ai-hub-progress");
+        const saved = localStorage.getItem("learning-hub-progress");
         if (saved) setProgress(JSON.parse(saved));
       }
       setLoading(false);
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) {
       authService.saveProgress(user.id, !!user.isDemo, progress);
     } else {
-      localStorage.setItem("sap-btp-ai-hub-progress", JSON.stringify(progress));
+      localStorage.setItem("learning-hub-progress", JSON.stringify(progress));
     }
   }, [progress, user]);
 

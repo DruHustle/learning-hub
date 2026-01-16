@@ -18,7 +18,7 @@ Use this checklist to ensure your website is properly deployed and functioning c
 
 ## GitHub Repository Setup
 
-- [ ] GitHub repository created at `https://github.com/yourusername/sap-btp-ai-hub`
+- [ ] GitHub repository created at `https://github.com/yourusername/learning-hub`
 - [ ] Repository is set to **Public**
 - [ ] Repository description is clear and descriptive
 - [ ] `.gitignore` file is present and configured
@@ -29,7 +29,7 @@ Use this checklist to ensure your website is properly deployed and functioning c
 
 - [ ] `package.json` contains correct `homepage` URL:
   ```json
-  "homepage": "https://yourusername.github.io/sap-btp-ai-hub"
+  "homepage": "https://yourusername.github.io/learning-hub"
   ```
 - [ ] `gh-pages` package is installed: `pnpm list gh-pages`
 - [ ] Deployment scripts are in `package.json`:
@@ -54,7 +54,7 @@ Use this checklist to ensure your website is properly deployed and functioning c
 - [ ] Source is set to **Deploy from a branch**
 - [ ] Branch is set to **gh-pages**
 - [ ] Folder is set to **/ (root)**
-- [ ] GitHub Pages URL is displayed: `https://yourusername.github.io/sap-btp-ai-hub`
+- [ ] GitHub Pages URL is displayed: `https://yourusername.github.io/learning-hub`
 - [ ] HTTPS is enabled (should be automatic)
 
 ## Website Verification

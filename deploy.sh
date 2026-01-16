@@ -72,7 +72,7 @@ REMOTE_URL=$(git remote get-url origin 2>/dev/null)
 if [ -z "$REMOTE_URL" ]; then
     echo "🔗 Configuring GitHub repository..."
     read -p "Enter your GitHub username: " USERNAME
-    git remote add origin "https://github.com/$USERNAME/sap-btp-ai-hub.git"
+    git remote add origin "https://github.com/$USERNAME/learning-hub.git"
     print_success "Remote origin added"
 else
     print_success "Remote origin configured: $REMOTE_URL"
@@ -159,4 +159,4 @@ git checkout main 2>/dev/null || git checkout master
 
 echo -e "\n${GREEN}✨ Deployment complete!${NC}"
 REPO_URL=$(git remote get-url origin | sed -E 's/.*github.com[:\/]([^\/]+)\/([^\.]+).*/\1\/\2/')
-echo "🌐 Your website is live at: https://$(echo $REPO_URL | cut -d'/' -f1).github.io/sap-btp-ai-hub"
+echo "🌐 Your website is live at: https://$(echo $REPO_URL | cut -d'/' -f1).github.io/learning-hub"

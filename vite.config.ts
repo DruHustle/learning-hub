@@ -18,8 +18,8 @@ const plugins = [
       description: 'Interactive learning hub for designing, prototyping, and deploying real-world AI solutions using a modern multi-tool ecosystem.',
       theme_color: '#ffffff',
       // For Hash Routing, the start_url is just the base path
-      start_url: '/sap-btp-ai-hub/', 
-      scope: '/sap-btp-ai-hub/',      
+      start_url: '/learning-hub/', 
+      scope: '/learning-hub/',      
       icons: [
         {
           src: 'pwa-192x192.png',
@@ -43,8 +43,8 @@ const plugins = [
 
 export default defineConfig({
   plugins,
-  // This ensures assets (JS/CSS) are loaded from /sap-btp-ai-hub/assets/
-  base: "/sap-btp-ai-hub/", 
+  // This ensures assets (JS/CSS) are loaded from /learning-hub/assets/
+  base: "/learning-hub/", 
   
   resolve: {
     alias: {

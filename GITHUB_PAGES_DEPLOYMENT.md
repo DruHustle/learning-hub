@@ -34,7 +34,7 @@ GitHub Pages is a free hosting service that allows you to publish static website
 1. Visit [github.com/new](https://github.com/new)
 2. Sign in with your GitHub account (create one if needed)
 3. Fill in the repository details:
-   - **Repository name**: `sap-btp-ai-hub`
+   - **Repository name**: `learning-hub`
    - **Description**: "Interactive learning platform for SAP BTP AI solutions"
    - **Visibility**: Select **Public** (required for free GitHub Pages)
    - **Initialize repository**: Leave unchecked (you'll push existing code)
@@ -44,7 +44,7 @@ GitHub Pages is a free hosting service that allows you to publish static website
 
 After creating the repository, GitHub displays a URL like:
 ```
-https://github.com/DruHustle/sap-btp-ai-hub.git
+https://github.com/DruHustle/learning-hub.git
 ```
 
 Copy this URL - you'll need it in the next step.
@@ -55,7 +55,7 @@ Copy this URL - you'll need it in the next step.
 
 Open a terminal and navigate to your project folder:
 ```bash
-cd sap-btp-ai-hub
+cd learning-hub
 ```
 
 #### Step 2.2: Initialize Git Repository (if not already done)
@@ -71,7 +71,7 @@ git commit -m "Initial commit: Learning Hub"
 
 Connect your local project to the GitHub repository:
 ```bash
-git remote add origin https://github.com/DruHustle/sap-btp-ai-hub.git
+git remote add origin https://github.com/DruHustle/learning-hub.git
 git branch -M main
 ```
 
@@ -83,8 +83,8 @@ Add the `homepage` field to your `package.json` file. This tells the build syste
 
 ```json
 {
-  "name": "sap-btp-ai-hub",
-  "homepage": "https://DruHustle.github.io/sap-btp-ai-hub",
+  "name": "learning-hub",
+  "homepage": "https://DruHustle.github.io/learning-hub",
   "version": "1.0.0",
   "type": "module",
   ...
@@ -167,7 +167,7 @@ git push -u origin main
 
 #### Step 4.1: Access Repository Settings
 
-1. Go to your GitHub repository: `https://github.com/DruHustle/sap-btp-ai-hub`
+1. Go to your GitHub repository: `https://github.com/DruHustle/learning-hub`
 2. Click the **Settings** tab
 3. In the left sidebar, click **Pages**
 
@@ -186,7 +186,7 @@ In the GitHub Pages section:
 
 GitHub Pages typically deploys within 1-2 minutes. You'll see a message:
 ```
-Your site is published at https://DruHustle.github.io/sap-btp-ai-hub
+Your site is published at https://DruHustle.github.io/learning-hub
 ```
 
 ### Phase 5: Verification
@@ -197,7 +197,7 @@ Your site is published at https://DruHustle.github.io/sap-btp-ai-hub
 2. Paste it into your browser
 3. Verify that your website loads correctly
 
-**Expected URL format**: `https://DruHustle.github.io/sap-btp-ai-hub`
+**Expected URL format**: `https://DruHustle.github.io/learning-hub`
 
 #### Step 5.2: Test Website Functionality
 
@@ -293,7 +293,7 @@ Add a link to your website in your GitHub profile:
 ### Share Your Website
 
 Share your learning hub with others:
-- Twitter: `Check out my Learning Hub: https://DruHustle.github.io/sap-btp-ai-hub`
+- Twitter: `Check out my Learning Hub: https://DruHustle.github.io/learning-hub`
 - LinkedIn: Post about your new resource
 - SAP Community: Share in relevant forums
 
@@ -388,7 +388,7 @@ For more information about deploying static sites:
 
 ## 💡 Pro Tips
 
-1. **Use a Custom Domain**: After GitHub Pages is working, you can add a custom domain (e.g., `sap-btp-ai-hub.com`)
+1. **Use a Custom Domain**: After GitHub Pages is working, you can add a custom domain (e.g., `learning-hub.com`)
 2. **Enable HTTPS**: GitHub Pages automatically provides HTTPS for all sites
 3. **Set Up Redirects**: Use GitHub Pages to redirect old URLs to new ones
 4. **Monitor Uptime**: Use free uptime monitoring services to ensure your site is always available

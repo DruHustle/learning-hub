@@ -4,14 +4,14 @@ An interactive learning platform designed to master SAP Business Technology Plat
 
 ## 🚀 Quick Links
 
-- [Live Demo](https://druhustle.github.io/sap-btp-ai-hub/) - View the live demo
-- [GitHub Repository](https://github.com/DruHustle/sap-btp-ai-hub) - View source code
-- [Issues](https://github.com/DruHustle/sap-btp-ai-hub/issues) - Report bugs or request features
+- [Live Demo](https://druhustle.github.io/learning-hub/) - View the live demo
+- [GitHub Repository](https://github.com/DruHustle/learning-hub) - View source code
+- [Issues](https://github.com/DruHustle/learning-hub/issues) - Report bugs or request features
 
 ## 🚀 Project Structure
 
 ```text
-sap-btp-ai-hub/
+learning-hub/
 ├── client/                 # Frontend React application (Vite + TS + Tailwind)
 │   ├── public/             # Static assets and tutorial content
 │   └── src/                # Application source code

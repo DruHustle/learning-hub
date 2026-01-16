@@ -13,7 +13,7 @@ export default function ComingSoon({ error, resetError, isDevelopment = false }:
 
   const handleGoHome = () => {
     // FIX: Navigate to the Base URL instead of the domain root
-    // import.meta.env.BASE_URL will be "/sap-btp-ai-hub/" on GitHub
+    // import.meta.env.BASE_URL will be "/learning-hub/" on GitHub
     navigate(import.meta.env.BASE_URL || "/");
   };
 
