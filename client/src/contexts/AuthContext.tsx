@@ -22,6 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [progressChanged, setProgressChanged] = useState(false);
   const [progress, setProgress] = useState(() => authService.readProgress("learning-hub-progress"));
 
   useEffect(() => {
@@ -42,14 +43,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (loading) return;
-    if (user) {
+    if (user && progressChanged) {
       authService.saveProgress(user.id, !!user.isDemo, progress);
-    } else {
+    } else if (!user) {
       try { localStorage.setItem("learning-hub-progress", JSON.stringify(progress)); } catch { /* Storage may be unavailable. */ }
     }
-  }, [progress, user, loading]);
+  }, [progress, user, loading, progressChanged]);
 
   const markAsCompleted = (tutorialId: number) => {
+    setProgressChanged(true);
     setProgress((prev: any) => {
       if (prev.completedTutorials.includes(tutorialId)) return prev;
       return {
@@ -63,6 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const result = await authService.login(email, password); 
     if (result.success && result.user) {
+      setProgressChanged(false);
       setProgress(await authService.getProgress(result.user.id, !!result.user.isDemo));
       setUser(result.user);
     }
@@ -71,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     authService.logout();
+    setProgressChanged(false);
     setProgress(authService.readProgress("learning-hub-progress"));
     setUser(null);
   };
@@ -91,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return { success: false, error: 'Not authenticated' };
     const result = authService.updateProfile(user.id, updates);
     if (result.success && result.user) {
+      setProgressChanged(false);
       setProgress(await authService.getProgress(result.user.id, !!result.user.isDemo));
       setUser(result.user);
     }
