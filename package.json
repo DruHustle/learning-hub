@@ -12,7 +12,7 @@
     "predeploy": "pnpm build",
     "deploy": "gh-pages -d dist",
     "preview": "vite preview --host",
-    "test:server": "node --test --import tsx server/security.test.ts",
+    "test:server": "node --test --import tsx server/security.test.ts server/http.test.ts",
     "check": "tsc --noEmit"
   },
   "dependencies": {

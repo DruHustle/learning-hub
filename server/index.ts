@@ -110,7 +110,8 @@ async function startServer() {
     } catch { res.status(500).json({ error: "Internal server error" }); }
   });
   app.post("/api/logout", (_req, res) => {
-    res.clearCookie("learning_session", cookieOptions);
+    const { maxAge: _maxAge, ...clearOptions } = cookieOptions;
+    res.clearCookie("learning_session", clearOptions);
     res.status(204).end();
   });
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
