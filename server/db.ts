@@ -26,7 +26,8 @@ export async function initializeSchema(): Promise<void> {
   const client = await connection.connect();
   try {
     await client.query("BEGIN");
-    await client.query(`CREATE TABLE IF NOT EXISTS users (
+    await client.query("CREATE SCHEMA IF NOT EXISTS learning_hub");
+    await client.query(`CREATE TABLE IF NOT EXISTS learning_hub.users (
       id VARCHAR(255) PRIMARY KEY,
       email VARCHAR(255) NOT NULL UNIQUE,
       password TEXT NOT NULL,
@@ -35,9 +36,9 @@ export async function initializeSchema(): Promise<void> {
       avatar TEXT,
       created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     )`);
-    await client.query(`CREATE TABLE IF NOT EXISTS progress (
+    await client.query(`CREATE TABLE IF NOT EXISTS learning_hub.progress (
       id SERIAL PRIMARY KEY,
-      user_id VARCHAR(255) NOT NULL UNIQUE REFERENCES users(id),
+      user_id VARCHAR(255) NOT NULL UNIQUE REFERENCES learning_hub.users(id),
       completed_tutorials JSONB NOT NULL,
       last_visited INTEGER,
       updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP

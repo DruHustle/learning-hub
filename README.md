@@ -57,7 +57,7 @@ Developed by **Andrew Gotora**
 
 ### Account API hosting
 
-GitHub Pages hosts the browser application. Real accounts require a separate Node service and PostgreSQL database with the tables in `server/schema.ts` (missing account tables are created at startup). Configure `DATABASE_URL`, a random `SESSION_SECRET` of at least 32 characters, and `ALLOWED_ORIGINS` (for Pages: `https://druhustle.github.io`) directly in the hosting provider. Use `pnpm install --frozen-lockfile && pnpm build` to build and `pnpm start` to serve. `/health` checks the process; `/ready` checks database connectivity.
+GitHub Pages hosts the browser application. Real accounts require a separate Node service and PostgreSQL database with the tables in `server/schema.ts` (missing account tables are created in the isolated `learning_hub` schema at startup). Configure `DATABASE_URL`, a random `SESSION_SECRET` of at least 32 characters, and `ALLOWED_ORIGINS` (for Pages: `https://druhustle.github.io`) directly in the hosting provider. Use `pnpm install --frozen-lockfile && pnpm build` to build and `pnpm start` to serve. `/health` checks the process; `/ready` checks database connectivity.
 
 Set `VITE_API_URL` when building the browser application to enable real accounts. Without it, demo accounts and learning progress work locally. Sessions use signed, HTTP-only cookies and expire after 15 minutes. Registration requires a password of at least 12 characters. Existing plaintext password records are hashed before the API begins accepting requests. Password reset, password change, and real account profile updates remain unavailable until those features are implemented; the UI reports that limitation.
 

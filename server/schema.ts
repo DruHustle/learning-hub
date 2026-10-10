@@ -1,6 +1,8 @@
-import { pgTable, varchar, text, timestamp, integer, serial, jsonb } from "drizzle-orm/pg-core";
+import { pgSchema, varchar, text, timestamp, integer, serial, jsonb } from "drizzle-orm/pg-core";
 
-export const users = pgTable("users", {
+const learningSchema = pgSchema("learning_hub");
+
+export const users = learningSchema.table("users", {
   id: varchar("id", { length: 255 }).primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   password: text("password").notNull(),
@@ -10,7 +12,7 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
-export const progress = pgTable("progress", {
+export const progress = learningSchema.table("progress", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id", { length: 255 }).notNull().unique().references(() => users.id),
   completedTutorials: jsonb("completed_tutorials").$type<number[]>().notNull(),
