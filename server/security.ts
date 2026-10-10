@@ -1,17 +1,26 @@
 import { createHmac, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
-import { promisify } from "node:util";
-const deriveKey = promisify(scrypt);
+import type { ScryptOptions } from "node:crypto";
+function deriveKey(password: string, salt: string, length: number, options: ScryptOptions): Promise<Buffer> {
+  return new Promise((resolve, reject) => scrypt(password, salt, length, options, (error, key) => error ? reject(error) : resolve(key)));
+}
+
+// OWASP's memory-constrained scrypt profile: N=2^14, r=8, p=5.
+const passwordOptions = { N: 16384, r: 8, p: 5, maxmem: 32 * 1024 * 1024 };
 
 export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16).toString("hex");
-  const key = await deriveKey(password, salt, 64) as Buffer;
-  return `scrypt:${salt}:${key.toString("hex")}`;
+  const key = await deriveKey(password, salt, 64, passwordOptions) as Buffer;
+  return `scrypt:16384:8:5:${salt}:${key.toString("hex")}`;
 }
 
 export async function verifyPassword(password: string, stored: string): Promise<boolean> {
-  const [scheme, salt, expected] = stored.split(":");
-  if (scheme !== "scrypt" || !/^[a-f0-9]{32}$/.test(salt || "") || !/^[a-f0-9]{128}$/.test(expected || "")) return false;
-  const actual = await deriveKey(password, salt, 64) as Buffer;
+  const fields = stored.split(":");
+  const legacy = fields.length === 3;
+  if (fields[0] !== "scrypt" || (!legacy && (fields.length !== 6 || fields.slice(1, 4).join(":") !== "16384:8:5"))) return false;
+  const salt = fields[legacy ? 1 : 4];
+  const expected = fields[legacy ? 2 : 5];
+  if (!/^[a-f0-9]{32}$/.test(salt || "") || !/^[a-f0-9]{128}$/.test(expected || "")) return false;
+  const actual = await deriveKey(password, salt, 64, { ...passwordOptions, p: legacy ? 1 : 5 }) as Buffer;
   return timingSafeEqual(actual, Buffer.from(expected, "hex"));
 }
 

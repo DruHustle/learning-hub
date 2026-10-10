@@ -6,6 +6,8 @@ test("password hashes use unique salts and never accept plaintext storage", asyn
   const first = await hashPassword("long-test-password");
   const second = await hashPassword("long-test-password");
   assert.notEqual(first, second);
+  assert.match(first, /^scrypt:16384:8:5:/);
+  assert.equal(await verifyPassword("long-test-password", first.replace("16384:8:5", "1048576:8:5")), false);
   assert.equal(await verifyPassword("long-test-password", first), true);
   assert.equal(await verifyPassword("wrong-password", first), false);
   assert.equal(await verifyPassword("plaintext", "plaintext"), false);

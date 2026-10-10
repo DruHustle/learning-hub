@@ -91,6 +91,9 @@ async function startServer() {
       if (!user || !(await verifyPassword(password, user.password))) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
+      if (user.password.split(":").length === 3) {
+        await db.update(users).set({ password: await hashPassword(password) }).where(eq(users.id, user.id));
+      }
       res.cookie("learning_session", signSession(user.id, secret), cookieOptions);
       res.json({ success: true, user: publicUser(user) });
     } catch (error: any) {
