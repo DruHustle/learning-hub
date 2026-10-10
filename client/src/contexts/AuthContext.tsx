@@ -22,22 +22,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState(() => {
-    const saved = localStorage.getItem("learning-hub-progress");
-    return saved ? JSON.parse(saved) : { completedTutorials: [] };
-  });
+  const [progress, setProgress] = useState(() => authService.readProgress("learning-hub-progress"));
 
   useEffect(() => {
     const initAuth = async () => {
-      const currentUser = authService.getCurrentUser();
+      const currentUser = await authService.restoreCurrentUser();
       setUser(currentUser);
       
       if (currentUser) {
         const savedProgress = await authService.getProgress(currentUser.id, !!currentUser.isDemo);
         setProgress(savedProgress);
       } else {
-        const saved = localStorage.getItem("learning-hub-progress");
-        if (saved) setProgress(JSON.parse(saved));
+        setProgress(authService.readProgress("learning-hub-progress"));
       }
       setLoading(false);
     };
@@ -45,12 +41,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (loading) return;
     if (user) {
       authService.saveProgress(user.id, !!user.isDemo, progress);
     } else {
-      localStorage.setItem("learning-hub-progress", JSON.stringify(progress));
+      try { localStorage.setItem("learning-hub-progress", JSON.stringify(progress)); } catch { /* Storage may be unavailable. */ }
     }
-  }, [progress, user]);
+  }, [progress, user, loading]);
 
   const markAsCompleted = (tutorialId: number) => {
     setProgress((prev: any) => {
@@ -66,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const result = await authService.login(email, password); 
     if (result.success && result.user) {
+      setProgress(await authService.getProgress(result.user.id, !!result.user.isDemo));
       setUser(result.user);
     }
     return result;
@@ -73,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     authService.logout();
+    setProgress(authService.readProgress("learning-hub-progress"));
     setUser(null);
   };
 
@@ -80,24 +79,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return authService.register(email, password, name);
   };
 
-  const requestPasswordReset = (email: string) => {
+  const requestPasswordReset = async (email: string) => {
     return authService.requestPasswordReset(email);
   };
 
-  const resetPassword = (token: string, newPassword: string) => {
+  const resetPassword = async (token: string, newPassword: string) => {
     return authService.resetPassword(token, newPassword);
   };
 
-  const updateProfile = (updates: Partial<Pick<User, 'name' | 'avatar'>>) => {
+  const updateProfile = async (updates: Partial<Pick<User, 'name' | 'avatar'>>) => {
     if (!user) return { success: false, error: 'Not authenticated' };
     const result = authService.updateProfile(user.id, updates);
     if (result.success && result.user) {
+      setProgress(await authService.getProgress(result.user.id, !!result.user.isDemo));
       setUser(result.user);
     }
     return result;
   };
 
-  const changePassword = (currentPassword: string, newPassword: string) => {
+  const changePassword = async (currentPassword: string, newPassword: string) => {
     if (!user) return { success: false, error: 'Not authenticated' };
     return authService.changePassword(user.id, currentPassword, newPassword);
   };

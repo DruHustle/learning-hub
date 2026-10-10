@@ -11,7 +11,7 @@ const plugins = [
   jsxLocPlugin(), 
   VitePWA({
     registerType: 'prompt',
-    includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+    includeAssets: ['favicon.ico', 'favicon.svg'],
     manifest: {
       name: 'Learning Hub',
       short_name: 'Learning Hub',
@@ -20,18 +20,12 @@ const plugins = [
       // For Hash Routing, the start_url is just the base path
       start_url: '/learning-hub/', 
       scope: '/learning-hub/',      
-      icons: [
-        {
-          src: 'pwa-192x192.png',
-          sizes: '192x192',
-          type: 'image/png'
-        },
-        {
-          src: 'pwa-512x512.png',
-          sizes: '512x512',
-          type: 'image/png'
-        }
-      ]
+      icons: [{
+        src: 'favicon.svg',
+        sizes: 'any',
+        type: 'image/svg+xml',
+        purpose: 'any'
+      }]
     },
     workbox: {
       maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,

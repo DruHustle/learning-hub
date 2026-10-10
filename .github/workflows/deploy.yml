@@ -34,7 +34,16 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level=moderate
+
+      - name: Typecheck
+        run: pnpm check
+
+      - name: Run unit tests
+        run: pnpm test
 
       - name: Build
         run: pnpm build
@@ -55,9 +64,9 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        continue-on-error: true
 
       - name: Deployment Success
+        if: success()
         run: |
           echo "✓ Successfully deployed to GitHub Pages"
           echo "URL: ${{ steps.deployment.outputs.page_url }}"
