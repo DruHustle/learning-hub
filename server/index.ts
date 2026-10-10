@@ -3,7 +3,7 @@ import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
-import { db, connection } from "./db";
+import { db, connection, initializeSchema } from "./db";
 import { users, progress } from "./schema";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -161,6 +161,7 @@ async function startServer() {
     if (res.headersSent) return next(error);
     res.status(error.status === 400 || error.status === 413 ? error.status : 500).json({ error: "Request failed" });
   });
+  await initializeSchema();
   // Upgrade legacy plaintext records before accepting any authentication requests.
   if (db) {
     const records = await db.select({ id: users.id, password: users.password }).from(users);
