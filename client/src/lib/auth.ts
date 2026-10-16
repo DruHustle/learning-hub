@@ -15,7 +15,7 @@ export interface User {
 }
 
 const SESSION_KEY = 'imsop_session';
-const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+const API_URL = (import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? 'https://learning-api.152-70-22-84.sslip.io' : '')).replace(/\/+$/, '');
 const api = axios.create({ baseURL: API_URL, timeout: 10_000, withCredentials: true });
 
 // Demo users
