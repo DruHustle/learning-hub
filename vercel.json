@@ -32,5 +32,6 @@
         }
       ]
     }
-  ]
+  ],
+  "buildCommand": "pnpm build && pnpm verify:deployment"
 }

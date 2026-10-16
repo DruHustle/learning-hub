@@ -8,12 +8,14 @@
     "dev": "vite --host",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outfile=dist-server/index.js",
     "start": "NODE_ENV=production node dist-server/index.js",
-    "test": "vitest run && pnpm test:server",
+    "test": "vitest run && pnpm test:server && pnpm test:deployment-config",
     "predeploy": "pnpm build",
     "deploy": "gh-pages -d dist",
     "preview": "vite preview --host",
     "test:server": "node --test --import tsx server/security.test.ts server/http.test.ts",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "verify:deployment": "node scripts/verify-deployment.mjs",
+    "test:deployment-config": "node --test scripts/verify-deployment.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -49,3 +49,12 @@ Render service stays suspended with automatic deployment disabled. Retain the
 previous image and manifest; restore its tag and run the same Compose update
 command to roll back. An emergency Render rollback requires explicitly resuming
 and checking that service before restoring the frontend API destination.
+
+## Frontend release checks
+
+Vercel is connected to `DruHustle/learning-hub`, production branch `main`.
+Run `pnpm build && pnpm verify:deployment` before release. Vercel and GitHub
+Pages verify the shipped JavaScript contains the configured HTTPS API origin
+and no retired Render address. `VITE_API_URL` must be an origin without `/api`;
+request paths already include that prefix. Intentional custom API origins and
+explicit empty values for demo-only builds remain supported.

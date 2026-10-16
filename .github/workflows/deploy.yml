@@ -50,6 +50,11 @@ jobs:
           VITE_API_URL: https://learning-api.152-70-22-84.sslip.io
         run: pnpm build
 
+      - name: Verify production API configuration and built bundle
+        env:
+          VITE_API_URL: https://learning-api.152-70-22-84.sslip.io
+        run: pnpm verify:deployment
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
