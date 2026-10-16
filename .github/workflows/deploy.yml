@@ -46,6 +46,8 @@ jobs:
         run: pnpm test
 
       - name: Build
+        env:
+          VITE_API_URL: https://learning-api.152-70-22-84.sslip.io
         run: pnpm build
 
       - name: Upload Pages artifact
