@@ -11,6 +11,13 @@ The API runs on the shared **Software Engineering Backend** VM, hostname
 - Caddy upstream: `learning-hub-api:10000`
 - Initial source revision: `8177fbce2f46700a154e54689807a0f058b3cf62`
 
+Container health calls database-free `/health` every 30 seconds. `/ready` still
+checks PostgreSQL and is mandatory before and after a release; a healthy container
+does not prove database availability. This avoids keeping an otherwise unused Neon
+compute awake with 2,880 dependency probes per day. Actual CU savings depend on
+traffic, other consumers, compute size and idle tails; pooling alone is not a saving.
+The Compose health override also supports retaining an already-qualified image.
+
 ## Build and deploy
 
 Run the repository checks first. Build a clean checkout for ARM64 using
@@ -31,6 +38,11 @@ From the runtime directory, validate with
 `sudo docker compose -f compose.yaml -f compose.runtime.json config --quiet`,
 then update with
 `sudo docker compose -f compose.yaml -f compose.runtime.json up -d --wait`.
+Before changing an existing manifest and again after the update, require a real
+database-readiness success with
+`curl --fail --max-time 15 http://127.0.0.1:11002/ready`.
+If the post-update check fails, restore the backed-up manifest and previous image
+and repeat readiness; never accept container liveness as successful deployment.
 If using this repository template directly, set `APP_IMAGE` to the tested tag.
 Verify readiness, anonymous authentication rejection and allowed/denied origins
 through both Oracle HTTPS and the frontend. Do not run destructive database
