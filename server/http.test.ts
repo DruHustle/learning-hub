@@ -3,6 +3,7 @@ import { after, before, test } from "node:test";
 import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:net";
 import { signSession } from "./security";
+import { readFileSync } from "node:fs";
 
 let child: ChildProcess;
 let base: string;
@@ -19,12 +20,29 @@ before(async () => {
     stdio: "ignore",
   });
   for (let attempt = 0; attempt < 40; attempt++) {
-    try { if ((await fetch(base + "/health")).ok) return; } catch { /* Wait for startup. */ }
+    if (child.exitCode !== null) throw new Error("Isolated test API exited before readiness");
+    try { if ((await fetch(base + "/health", { signal: AbortSignal.timeout(250) })).ok) return; } catch { /* Wait for startup. */ }
     await new Promise(resolve => setTimeout(resolve, 100));
   }
   throw new Error("Isolated test API did not start");
 });
 after(() => child?.kill("SIGTERM"));
+
+test("Oracle probes preserve cadence and use process liveness", () => {
+  const compose = JSON.parse(readFileSync(new URL("../deploy/oracle/compose.yaml", import.meta.url), "utf8"));
+  const probe = compose.services.app.healthcheck;
+  assert.match(probe.test.join(" "), /\/health/);
+  assert.doesNotMatch(probe.test.join(" "), /\/ready/);
+  assert.equal(probe.interval, "30s");
+  assert.equal(probe.timeout, "10s");
+  assert.equal(probe.retries, 3);
+});
+
+test("liveness with a session cookie remains independent of unavailable database readiness", async () => {
+  const cookie = "learning_session=" + signSession("alice", "local-learning-hub-development-secret");
+  assert.equal((await fetch(base + "/health", { headers: { cookie } })).status, 200);
+  assert.equal((await fetch(base + "/ready", { headers: { cookie } })).status, 503);
+});
 
 test("private progress rejects anonymous, another owner, and cross-site requests", async () => {
   const cookie = "learning_session=" + signSession("alice", "local-learning-hub-development-secret");
