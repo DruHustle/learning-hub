@@ -1,0 +1,17 @@
+# Real runtime inputs stay outside this checkout and application build contexts.
+*.env
+*.runtime.json
+compose.runtime.json
+*.pem
+*.key
+*.crt
+*.cer
+*.dump
+*.sql
+*.sql.gz
+*.backup
+*.tar
+*.tar.gz
+private/
+tls/
+backups/

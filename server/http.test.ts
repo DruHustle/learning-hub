@@ -16,7 +16,7 @@ before(async () => {
   await new Promise<void>(resolve => socket.close(() => resolve()));
   base = `http://127.0.0.1:${port}`;
   child = spawn(process.execPath, ["--import", "tsx", "server/index.ts"], {
-    env: { ...process.env, NODE_ENV: "test", DATABASE_URL: "", PORT: String(port) },
+    env: { ...process.env, NODE_ENV: "test", DATABASE_URL: "", PORT: String(port), SERVE_FRONTEND: "false", APP_REVISION: "", RENDER_GIT_COMMIT: "a".repeat(40) },
     stdio: "ignore",
   });
   for (let attempt = 0; attempt < 40; attempt++) {
@@ -27,6 +27,13 @@ before(async () => {
   throw new Error("Isolated test API did not start");
 });
 after(() => child?.kill("SIGTERM"));
+
+test("API-only runtime identifies its Render revision and does not serve a frontend", async () => {
+  const response = await fetch(base + "/version");
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  assert.deepEqual(await response.json(), { service: "learning-hub", revision: "a".repeat(40) });
+  assert.equal((await fetch(base + "/")).status, 404);
+});
 
 test("Oracle probes preserve cadence and use process liveness", () => {
   const compose = JSON.parse(readFileSync(new URL("../deploy/oracle/compose.yaml", import.meta.url), "utf8"));

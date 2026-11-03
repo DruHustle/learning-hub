@@ -1,0 +1,64 @@
+name: Pull request verification
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: learning-hub-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify Learning Hub
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-api.152-70-22-84.sslip.io' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate optional PostgreSQL configuration without starting services
+        run: |
+          python3 scripts/test_database_candidate.py --require-compose
+          node --test scripts/database-client-config.test.mjs
+
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level=moderate
+
+      - name: Typecheck
+        run: pnpm check
+
+      - name: Run unit, server and deployment configuration tests
+        run: pnpm test
+
+      - name: Build frontend and API
+        run: pnpm build
+
+      - name: Verify deployment configuration and built bundle
+        run: pnpm verify:deployment
+
+      - name: Install Chromium for PWA verification
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Verify PWA offline, update and API cache behavior
+        run: pnpm test:pwa

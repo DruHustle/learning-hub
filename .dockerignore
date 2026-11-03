@@ -7,3 +7,6 @@ dist
 dist-server
 private
 .vercel
+# Database candidates and private runtime overrides are not application image inputs.
+deploy/database
+**/compose.runtime.json

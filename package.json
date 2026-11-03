@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outfile=dist-server/index.js",
+    "build": "vite build && pnpm build:server",
+    "build:server": "esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outfile=dist-server/index.js",
     "start": "NODE_ENV=production node dist-server/index.js",
     "test": "vitest run && pnpm test:server && pnpm test:deployment-config",
     "predeploy": "pnpm build",
@@ -15,7 +16,8 @@
     "test:server": "node --test --import tsx server/security.test.ts server/http.test.ts",
     "check": "tsc --noEmit",
     "verify:deployment": "node scripts/verify-deployment.mjs",
-    "test:deployment-config": "node --test scripts/verify-deployment.test.mjs"
+    "test:deployment-config": "node --test scripts/verify-deployment.test.mjs",
+    "test:pwa": "node --test scripts/pwa.browser.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -80,7 +82,7 @@
     "vaul": "^1.1.2",
     "vite-plugin-pwa": "^1.2.0",
     "wouter": "^3.3.5",
-    "zod": "^4.1.12"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@builder.io/vite-plugin-jsx-loc": "^0.1.1",
@@ -100,6 +102,7 @@
     "esbuild": "^0.25.0",
     "gh-pages": "^6.3.0",
     "pnpm": "^10.15.1",
+    "playwright": "1.64.1",
     "postcss": "^8.5.29",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.1.14",
@@ -119,7 +122,14 @@
       "@rollup/plugin-terser>serialize-javascript": "7.1.2",
       "mermaid@<11.16.1": "11.16.1",
       "fflate@>=0.8.0 <0.8.3": "0.8.3",
-      "mdast-util-to-hast@<13.2.1": "13.2.1"
+      "mdast-util-to-hast@<13.2.1": "13.2.1",
+      "follow-redirects@>=1.16.0 <1.16.2": "1.16.2",
+      "express>body-parser": "1.20.9",
+      "dompurify@<3.4.17": "3.4.17",
+      "qs@<6.16.1": "6.16.1",
+      "fast-uri@>=3.0.0 <3.1.9": "3.1.9",
+      "workbox-build>glob": "14.0.2",
+      "filelist>minimatch": "11.0.4"
     }
   }
 }

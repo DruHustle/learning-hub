@@ -1,0 +1,23 @@
+# Candidate only; select this path explicitly after resource/cost review.
+services:
+  - type: web
+    name: learning-hub-api-candidate
+    runtime: docker
+    region: frankfurt
+    plan: 0.5c-512mb
+    numInstances: 1
+    autoDeployTrigger: "off"
+    dockerfilePath: ./deploy/render/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SERVE_FRONTEND
+        value: "false"
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false

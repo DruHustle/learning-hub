@@ -34,6 +34,26 @@ pnpm install
 pnpm dev
 ```
 
+### PWA verification
+
+Use the pnpm version pinned in `package.json`. After `pnpm build`, run:
+
+```bash
+pnpm exec playwright install --with-deps chromium
+pnpm test:pwa
+```
+
+These checks load the production build at `/learning-hub/`, verify offline
+navigation and uncached account requests, then build a second release to check
+waiting-worker activation and removal of the old HTML cache revision. They do
+not contact the production API. Both PR verification and Pages deployment run
+them alongside the existing type checks, tests and moderate production audit.
+
+The scoped `workbox-build>glob` and `filelist>minimatch` overrides fix the PWA
+tooling audit without changing the PWA plugin or its registration/cache policy.
+The generated-worker checks and FileList include/exclude test qualify the APIs
+used by those two consumers; avoid replacing them with a global major override.
+
 ## 🌐 Deployment
 The Learning Hub is optimized for **GitHub Pages** using hash-based routing. Any push to the `main` branch will trigger an automated deployment via GitHub Actions.
 
@@ -68,3 +88,7 @@ Use the PostgreSQL connection URL from your provider for `DATABASE_URL`; externa
 The API runs on the shared Oracle VM **Software Engineering Backend**. See
 [Oracle deployment and rollback](deploy/oracle/README.md). Existing managed
 PostgreSQL data and signed HTTP-only session cookies are retained.
+
+The [Render API migration candidate](deploy/render/README.md) contains a separate
+backend-only Docker build, source-revision verification and coordinated frontend
+cutover instructions. It has not changed the active backend or database.
