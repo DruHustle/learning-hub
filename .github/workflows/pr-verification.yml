@@ -37,6 +37,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Validate optional PostgreSQL configuration without starting services
+        run: |
+          python3 scripts/test_database_candidate.py --require-compose
+          node --test scripts/database-client-config.test.mjs
+
       - name: Audit production dependencies
         run: pnpm audit --prod --audit-level=moderate
 

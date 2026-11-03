@@ -32,6 +32,13 @@ storage. Backblaze B2, if selected, stores backup objects; it is not a database.
 The migration must include a successful restore rehearsal and retention policy.
 No production database container or backup schedule is created by this candidate.
 
+The [optional PostgreSQL container candidate](../database/README.md) provides
+separate Docker-host configuration, verified-TLS connection examples and an
+application network/CA overlay tested against the retained Oracle manifest.
+It preserves the existing primary and session secret. It does not add a database
+to this Render Blueprint; choosing a paid private service and persistent disk,
+then qualifying its image, storage and restore, remains an explicit hosting step.
+
 ## Qualification and frontend cutover
 
 1. Run `corepack pnpm check`, server tests and `build:server`. Build and run the

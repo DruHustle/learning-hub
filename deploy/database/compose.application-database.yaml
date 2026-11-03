@@ -1,0 +1,27 @@
+{
+  "services": {
+    "app": {
+      "networks": {
+        "ingress": {},
+        "database": {}
+      },
+      "volumes": [
+        {
+          "type": "bind",
+          "source": "${LEARNING_HUB_DATABASE_CA_FILE:?Use the existing public CA certificate file for the selected database}",
+          "target": "/run/learning-hub-db-ca/root.crt",
+          "read_only": true,
+          "bind": {
+            "create_host_path": false
+          }
+        }
+      ]
+    }
+  },
+  "networks": {
+    "database": {
+      "name": "learning-hub-database",
+      "external": true
+    }
+  }
+}
