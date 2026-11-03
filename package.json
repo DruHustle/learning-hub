@@ -16,7 +16,8 @@
     "test:server": "node --test --import tsx server/security.test.ts server/http.test.ts",
     "check": "tsc --noEmit",
     "verify:deployment": "node scripts/verify-deployment.mjs",
-    "test:deployment-config": "node --test scripts/verify-deployment.test.mjs"
+    "test:deployment-config": "node --test scripts/verify-deployment.test.mjs",
+    "test:pwa": "node --test scripts/pwa.browser.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -101,6 +102,7 @@
     "esbuild": "^0.25.0",
     "gh-pages": "^6.3.0",
     "pnpm": "^10.15.1",
+    "playwright": "1.64.1",
     "postcss": "^8.5.29",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.1.14",
@@ -125,7 +127,9 @@
       "express>body-parser": "1.20.9",
       "dompurify@<3.4.17": "3.4.17",
       "qs@<6.16.1": "6.16.1",
-      "fast-uri@>=3.0.0 <3.1.9": "3.1.9"
+      "fast-uri@>=3.0.0 <3.1.9": "3.1.9",
+      "workbox-build>glob": "14.0.2",
+      "filelist>minimatch": "11.0.4"
     }
   }
 }

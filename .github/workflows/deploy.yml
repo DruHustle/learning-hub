@@ -55,6 +55,14 @@ jobs:
           VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-api.152-70-22-84.sslip.io' }}
         run: pnpm verify:deployment
 
+      - name: Install Chromium for PWA verification
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Verify PWA offline, update and API cache behavior
+        env:
+          VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-api.152-70-22-84.sslip.io' }}
+        run: pnpm test:pwa
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

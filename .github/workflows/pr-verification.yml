@@ -56,3 +56,9 @@ jobs:
 
       - name: Verify deployment configuration and built bundle
         run: pnpm verify:deployment
+
+      - name: Install Chromium for PWA verification
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Verify PWA offline, update and API cache behavior
+        run: pnpm test:pwa
