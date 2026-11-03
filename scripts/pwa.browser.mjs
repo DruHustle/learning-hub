@@ -188,13 +188,16 @@ test("built PWA keeps Pages scope, offline content, safe API requests and prompt
   await page.evaluate(async () => {
     window.pwaTestControllerChanged = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => { window.pwaTestControllerChanged = true; });
-    await (await navigator.serviceWorker.getRegistration()).update();
+    window.pwaTestRegistration = await navigator.serviceWorker.getRegistration();
+    await window.pwaTestRegistration.update();
   });
-  await page.waitForFunction(async () => (await navigator.serviceWorker.getRegistration())?.waiting?.state === "installed");
+  // Playwright polls this predicate synchronously; returning a Promise would
+  // finish polling before the new worker has actually reached the waiting state.
+  await page.waitForFunction(() => window.pwaTestRegistration.waiting?.state === "installed");
   assert.equal(await page.evaluate(() => window.pwaTestControllerChanged), false);
   assert.equal(await page.locator('meta[name="pwa-test-release"]').count(), 0);
-  await page.evaluate(async () => {
-    (await navigator.serviceWorker.getRegistration()).waiting.postMessage({ type: "SKIP_WAITING" });
+  await page.evaluate(() => {
+    window.pwaTestRegistration.waiting.postMessage({ type: "SKIP_WAITING" });
   });
   await page.waitForFunction(() => window.pwaTestControllerChanged);
   await page.reload();
