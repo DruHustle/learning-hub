@@ -68,3 +68,7 @@ Use the PostgreSQL connection URL from your provider for `DATABASE_URL`; externa
 The API runs on the shared Oracle VM **Software Engineering Backend**. See
 [Oracle deployment and rollback](deploy/oracle/README.md). Existing managed
 PostgreSQL data and signed HTTP-only session cookies are retained.
+
+The [Render API migration candidate](deploy/render/README.md) contains a separate
+backend-only Docker build, source-revision verification and coordinated frontend
+cutover instructions. It has not changed the active backend or database.

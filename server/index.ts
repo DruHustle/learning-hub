@@ -115,6 +115,10 @@ async function startServer() {
     res.status(204).end();
   });
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
+  app.get("/version", (_req, res) => {
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ service: "learning-hub", revision: process.env.APP_REVISION || process.env.RENDER_GIT_COMMIT || null });
+  });
   app.get("/ready", async (_req, res) => {
     try { if (!connection) throw new Error(); await connection.query("SELECT 1"); res.json({ status: "ready" }); }
     catch { res.status(503).json({ status: "not-ready" }); }
@@ -151,12 +155,13 @@ async function startServer() {
       ? path.resolve(__dirname, "..", "dist")
       : path.resolve(__dirname, "..", "dist");
 
-  app.use(express.static(staticPath));
-
-  // Handle client-side routing - serve index.html for all routes
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(staticPath, "index.html"));
-  });
+  if (process.env.SERVE_FRONTEND !== "false") {
+    app.use(express.static(staticPath));
+    // The historical combined service remains supported. Render serves only API.
+    app.get("*", (_req, res) => res.sendFile(path.join(staticPath, "index.html")));
+  } else {
+    app.use((_req, res) => res.status(404).json({ error: "Not found" }));
+  }
 
   app.use((error: Error & { status?: number }, _req: Request, res: Response, next: NextFunction) => {
     if (res.headersSent) return next(error);
@@ -175,7 +180,7 @@ async function startServer() {
   }
   const port = process.env.PORT || 3001;
 
-  server.listen(port, () => {
+  server.listen(Number(port), "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${port}/`);
   });
 }
