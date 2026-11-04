@@ -134,7 +134,9 @@ test("built PWA keeps Pages scope, offline content, safe API requests and prompt
             const request = route.request();
             const url = new URL(request.url());
             const fixture = request.method() === "GET" && (
-              url.pathname === "/api/me"
+              url.pathname === "/ready"
+                ? { status: "ready" }
+                : url.pathname === "/api/me"
                 ? { user: { id: "header-layout-user", name: longAccountName, email: "header-layout@example.test", role: "user" } }
                 : url.pathname === "/api/progress/header-layout-user"
                   ? { completedTutorials: [1] }
