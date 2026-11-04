@@ -80,4 +80,15 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Verify PWA offline, update and API cache behavior
+        env:
+          PWA_OUTPUT_DIR: ${{ runner.temp }}/learning-hub-pwa
         run: pnpm test:pwa
+
+      - name: Upload responsive header evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: responsive-header-${{ github.sha }}
+          path: ${{ runner.temp }}/learning-hub-pwa
+          if-no-files-found: ignore
+          retention-days: 7

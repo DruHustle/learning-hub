@@ -17,6 +17,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SearchDialog } from "./SearchDialog";
 import { useAuth } from "@/contexts/AuthContext"; // Ensure this path is correct
 import type { AccountProgressState } from "@/lib/accountProgress";
+import { safeSessionStorage } from "@/lib/storage";
+
+const PORTFOLIO_URL = "https://andrewgotora.com/";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -106,13 +109,19 @@ export default function Layout({ children }: LayoutProps) {
 
   // Check if user came from portfolio
   useEffect(() => {
-    const referrer = document.referrer;
-    const fromPortfolio = referrer.includes('druhustle.github.io/portifolio') || 
-                          referrer.includes('portfolio') ||
-                          sessionStorage.getItem('fromPortfolio') === 'true';
+    let fromPortfolio = safeSessionStorage.getItem('fromPortfolio') === 'true';
+    try {
+      const referrer = new URL(document.referrer);
+      fromPortfolio ||= referrer.protocol === 'https:' && (
+        referrer.hostname === 'andrewgotora.com' ||
+        referrer.hostname === 'www.andrewgotora.com' ||
+        (referrer.hostname === 'druhustle.github.io' &&
+          /^\/(?:portfolio|portifolio)(?:\/|$)/.test(referrer.pathname))
+      );
+    } catch { /* Empty or malformed referrers do not identify the portfolio. */ }
     
     if (fromPortfolio) {
-      sessionStorage.setItem('fromPortfolio', 'true');
+      safeSessionStorage.setItem('fromPortfolio', 'true');
       setShowPortfolioButton(true);
     }
   }, []);
@@ -148,7 +157,7 @@ export default function Layout({ children }: LayoutProps) {
           <nav className="hidden lg:flex items-center gap-4">
             {showPortfolioButton && (
               <a 
-                href="https://druhustle.github.io/portifolio/" 
+                href={PORTFOLIO_URL}
                 className="flex items-center gap-2 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors mr-4 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20"
               >
                 <ArrowLeft className="w-3 h-3" />
@@ -262,7 +271,7 @@ export default function Layout({ children }: LayoutProps) {
 
               {showPortfolioButton && (
                 <a 
-                  href="https://druhustle.github.io/portifolio/" 
+                  href={PORTFOLIO_URL}
                   className="flex items-center gap-2 text-sm font-bold text-blue-400 py-2 border-b border-white/5"
                 >
                   <ArrowLeft className="w-4 h-4" />
