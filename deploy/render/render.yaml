@@ -1,10 +1,11 @@
-# Candidate only; select this path explicitly after resource/cost review.
+# Backend compute candidate; keep the current external PostgreSQL primary.
+# Select this nested path explicitly when creating the approved free service.
 services:
   - type: web
     name: learning-hub-api-candidate
     runtime: docker
     region: frankfurt
-    plan: 0.5c-512mb
+    plan: free
     numInstances: 1
     autoDeployTrigger: "off"
     dockerfilePath: ./deploy/render/Dockerfile
@@ -15,6 +16,8 @@ services:
         value: production
       - key: SERVE_FRONTEND
         value: "false"
+      - key: DATABASE_STARTUP_MODE
+        value: verify
       - key: DATABASE_URL
         sync: false
       - key: SESSION_SECRET

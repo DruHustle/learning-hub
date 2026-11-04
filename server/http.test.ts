@@ -16,7 +16,7 @@ before(async () => {
   await new Promise<void>(resolve => socket.close(() => resolve()));
   base = `http://127.0.0.1:${port}`;
   child = spawn(process.execPath, ["--import", "tsx", "server/index.ts"], {
-    env: { ...process.env, NODE_ENV: "test", DATABASE_URL: "", PORT: String(port), SERVE_FRONTEND: "false", APP_REVISION: "", RENDER_GIT_COMMIT: "a".repeat(40) },
+    env: { ...process.env, NODE_ENV: "test", DATABASE_URL: "", DATABASE_STARTUP_MODE: "initialize", PORT: String(port), SERVE_FRONTEND: "false", APP_REVISION: "", RENDER_GIT_COMMIT: "a".repeat(40) },
     stdio: "ignore",
   });
   for (let attempt = 0; attempt < 40; attempt++) {

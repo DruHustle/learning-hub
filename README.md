@@ -89,6 +89,9 @@ The API runs on the shared Oracle VM **Software Engineering Backend**. See
 [Oracle deployment and rollback](deploy/oracle/README.md). Existing managed
 PostgreSQL data and signed HTTP-only session cookies are retained.
 
-The [Render API migration candidate](deploy/render/README.md) contains a separate
-backend-only Docker build, source-revision verification and coordinated frontend
-cutover instructions. It has not changed the active backend or database.
+The [Render API compute migration](deploy/render/README.md) prepares a free web
+service while retaining the current external PostgreSQL primary. Its API-only
+Docker runtime verifies the existing schema in a read-only startup transaction
+and stops rather than creating tables or rewriting credentials. The runbook covers
+protected configuration, source-revision checks and frontend cutover. These
+source changes do not change the active backend or database by themselves.

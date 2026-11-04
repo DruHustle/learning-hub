@@ -9,6 +9,7 @@ import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { hashPassword, verifyPassword, signSession, verifySession } from "./security";
+import { databaseStartupMode, verifyAccountSchema } from "./startup";
 import type { Request, Response, NextFunction } from "express";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -17,6 +18,7 @@ const __dirname = path.dirname(__filename);
 async function startServer() {
   const app = express();
   const isProduction = process.env.NODE_ENV === "production";
+  const startupMode = databaseStartupMode();
   const secret = process.env.SESSION_SECRET || (isProduction ? "" : "local-learning-hub-development-secret");
   if (isProduction && (!db || secret.length < 32 || !process.env.ALLOWED_ORIGINS)) {
     throw new Error("Production requires DATABASE_URL, SESSION_SECRET (32+ characters), and ALLOWED_ORIGINS");
@@ -167,9 +169,15 @@ async function startServer() {
     if (res.headersSent) return next(error);
     res.status(error.status === 400 || error.status === 413 ? error.status : 500).json({ error: "Request failed" });
   });
-  await initializeSchema();
+  if (startupMode === "verify") {
+    if (!connection) throw new Error("Verify-only startup requires DATABASE_URL");
+    await verifyAccountSchema(connection);
+  } else {
+    await initializeSchema();
+  }
   // Upgrade legacy plaintext records before accepting any authentication requests.
-  if (db) {
+  // An existing-primary Render cutover verifies these records without rewriting them.
+  if (startupMode === "initialize" && db) {
     const records = await db.select({ id: users.id, password: users.password }).from(users);
     for (const record of records) {
       if (!record.password.startsWith("scrypt:")) {
