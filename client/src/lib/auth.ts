@@ -287,15 +287,27 @@ export async function saveProgress(
   userId: string,
   isDemo: boolean,
   progress: Progress
-): Promise<void> {
+): Promise<Progress | undefined> {
   if (isDemo) {
     saveLocalProgress(`progress_${userId}`, progress);
     return;
   }
+  const submitted = parseServerProgress(progress);
   const response = await api.post(
     `/api/progress/${encodeURIComponent(userId)}`,
-    parseServerProgress(progress)
+    // Old servers ignore merge and still replace the full list. Upgrade the API
+    // before relying on atomic merging across devices during a staged rollout.
+    { ...submitted, merge: true }
   );
   if (response.data?.success !== true)
     throw new Error("The progress save could not be confirmed.");
+  if (Object.prototype.hasOwnProperty.call(response.data, "progress")) {
+    const saved = parseServerProgress(response.data.progress);
+    const acknowledged = new Set(saved.completedTutorials);
+    if (submitted.completedTutorials.some(id => !acknowledged.has(id)))
+      throw new Error("The server did not confirm all submitted completions.");
+    return saved;
+  }
+  // Keep compatibility with a legacy API's { success: true } acknowledgement.
+  return undefined;
 }

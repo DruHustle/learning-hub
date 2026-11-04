@@ -17,6 +17,20 @@ jobs:
     name: Verify Learning Hub
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: learning_hub_progress_test
+          POSTGRES_USER: learning_test
+          POSTGRES_PASSWORD: learning_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U learning_test -d learning_hub_progress_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-api.152-70-22-84.sslip.io' }}
     steps:
@@ -50,6 +64,11 @@ jobs:
 
       - name: Run unit, server and deployment configuration tests
         run: pnpm test
+
+      - name: Verify concurrent progress updates against PostgreSQL
+        env:
+          TEST_DATABASE_URL: postgresql://learning_test:learning_test@127.0.0.1:5432/learning_hub_progress_test
+        run: pnpm test:progress-postgres
 
       - name: Build frontend and API
         run: pnpm build

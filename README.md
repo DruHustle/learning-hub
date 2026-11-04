@@ -81,6 +81,16 @@ GitHub Pages hosts the browser application. Real accounts require a separate Nod
 
 Production builds use the Oracle API at `https://learning-api.152-70-22-84.sslip.io` by default. Set `VITE_API_URL` to override it; an explicit empty value keeps demo-only behavior. Development without a configured API keeps demo accounts and learning progress local. Sessions use signed, HTTP-only cookies and expire after 15 minutes. Registration requires a password of at least 12 characters. Existing plaintext password records are hashed before the API begins accepting requests. Password reset, password change, and real account profile updates remain unavailable until those features are implemented; the UI reports that limitation.
 
+Progress completions send `merge: true` with the full known list. The updated API
+atomically unions those IDs with the saved list and returns the acknowledged
+progress. Calls without that flag, or with `merge: false`, retain full replacement
+including an intentional empty list. During a staged rollout, old servers ignore
+the new flag and still replace progress; upgrade the backend before relying on
+cross-device merging. A failed or incomplete acknowledgement retains pending
+completions and requires an explicit retry. CI verifies competing updates against
+an isolated PostgreSQL service with `pnpm test:progress-postgres`; that command
+requires a dedicated local `TEST_DATABASE_URL` and must never use a live database.
+
 Use the PostgreSQL connection URL from your provider for `DATABASE_URL`; external connections should verify TLS (`sslmode=verify-full`). Existing MySQL records require a separate data migration when changing providers.
 
 ## Backend hosting

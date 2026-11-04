@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import cors from "cors";
 import { db, connection, initializeSchema } from "./db";
 import { users, progress } from "./schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { hashPassword, verifyPassword, signSession, verifySession } from "./security";
@@ -137,14 +137,30 @@ async function startServer() {
 
   app.post("/api/progress/:userId", authenticate, async (req, res) => {
     if (!db) return res.status(500).json({ error: "Database not connected" });
-    const input = z.object({ completedTutorials: z.array(z.number().int().nonnegative()).max(10000), lastVisited: z.number().int().nonnegative().optional() }).safeParse(req.body);
+    const input = z.object({ completedTutorials: z.array(z.number().int().nonnegative()).max(10000), lastVisited: z.number().int().nonnegative().optional(), merge: z.boolean().optional() }).safeParse(req.body);
     if (!input.success) return res.status(400).json({ error: "Invalid progress" });
-    const { completedTutorials, lastVisited } = input.data;
+    const { completedTutorials, lastVisited, merge } = input.data;
     try {
-      await db.update(progress)
-        .set({ completedTutorials, lastVisited })
-        .where(eq(progress.userId, req.params.userId));
-      res.json({ success: true });
+      // Evaluate against the UPDATE target's current row, including after a
+      // concurrent updater releases its row lock. A read-then-write loses IDs.
+      const merged = sql<number[]>`(
+        SELECT COALESCE(jsonb_agg(completion ORDER BY completion), '[]'::jsonb)
+        FROM (
+          SELECT DISTINCT completion
+          FROM jsonb_array_elements(${progress.completedTutorials} || ${JSON.stringify(completedTutorials)}::jsonb) AS ids(completion)
+        ) AS distinct_completions
+      )`;
+      const [saved] = await db.update(progress)
+        .set({ completedTutorials: merge ? merged : completedTutorials, lastVisited })
+        .where(and(
+          eq(progress.userId, req.params.userId),
+          merge ? sql`jsonb_array_length(${merged}) <= 10000` : undefined,
+        ))
+        .returning({ completedTutorials: progress.completedTutorials });
+      // Missing records and an oversized union must not acknowledge unsaved IDs.
+      if (!saved) return res.status(409).json({ error: "Progress could not be saved. Reload your progress and retry." });
+      // Legacy callers retain full replacement, including an intentional [].
+      res.json(merge ? { success: true, progress: saved } : { success: true });
     } catch (error: any) {
       res.status(500).json({ error: "Internal server error" });
     }

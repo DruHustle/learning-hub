@@ -112,7 +112,7 @@ describe("account progress recovery", () => {
     mocks.get.mockResolvedValue(reply([1, 2]));
     await store.retryProgress();
     expect(posts("/api/progress/alice")).toEqual([
-      ["/api/progress/alice", { completedTutorials: [1, 2, 4] }],
+      ["/api/progress/alice", { completedTutorials: [1, 2, 4], merge: true }],
     ]);
     expect(store.getSnapshot().progress.completedTutorials).toEqual([1, 2, 4]);
     expect(store.getSnapshot().pendingCount).toBe(0);
@@ -154,6 +154,7 @@ describe("account progress recovery", () => {
     await store.retryProgress();
     expect(posts("/api/progress/alice").at(-1)?.[1]).toEqual({
       completedTutorials: [1, 2, 7, 3, 4],
+      merge: true,
     });
     expect(posts("/api/progress/alice")).toHaveLength(2);
     expect(store.getSnapshot().pendingCount).toBe(0);
@@ -174,12 +175,14 @@ describe("account progress recovery", () => {
     expect(posts("/api/progress/alice")).toHaveLength(1);
     expect(posts("/api/progress/alice")[0][1]).toEqual({
       completedTutorials: [1, 2],
+      merge: true,
     });
     first.resolve(acknowledgement);
     await settle();
     expect(posts("/api/progress/alice")).toHaveLength(2);
     expect(posts("/api/progress/alice")[1][1]).toEqual({
       completedTutorials: [1, 2, 3],
+      merge: true,
     });
     second.resolve(acknowledgement);
     await settle();
@@ -188,6 +191,67 @@ describe("account progress recovery", () => {
       pendingCount: 0,
     });
   });
+
+  it("uses authoritative merged progress before saving completions added during the request", async () => {
+    const first = deferred<{
+      data: { success: boolean; progress: { completedTutorials: number[] } };
+    }>();
+    const second = deferred<typeof acknowledgement>();
+    const { store, auth } = await create();
+    await store.start();
+    mocks.post
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(second.promise);
+    store.markAsCompleted(2);
+    store.markAsCompleted(3);
+    expect(posts("/api/progress/alice")).toHaveLength(1);
+
+    // Another device completed 7 while this request was pending.
+    first.resolve({
+      data: { success: true, progress: { completedTutorials: [1, 2, 7] } },
+    });
+    await settle();
+    expect(posts("/api/progress/alice")[1][1]).toEqual({
+      completedTutorials: [1, 2, 7, 3],
+      merge: true,
+    });
+    expect(auth.readPendingProgress(alice.id).completedTutorials).toEqual([3]);
+    second.resolve(acknowledgement);
+    await settle();
+    expect(store.getSnapshot().progress.completedTutorials).toEqual([
+      1, 2, 7, 3,
+    ]);
+    expect(store.getSnapshot().pendingCount).toBe(0);
+  });
+
+  it.each([
+    null,
+    { completedTutorials: "invalid" },
+    { completedTutorials: [1, "2"] },
+    { completedTutorials: [1] },
+  ])(
+    "retains intent without retrying a malformed or incomplete acknowledgement: %j",
+    async progress => {
+      const { store, auth } = await create();
+      await store.start();
+      mocks.post.mockResolvedValueOnce({ data: { success: true, progress } });
+      store.markAsCompleted(2);
+      await settle();
+      store.markAsCompleted(3);
+      await settle();
+      expect(posts("/api/progress/alice")).toHaveLength(1);
+      expect(auth.readPendingProgress(alice.id).completedTutorials).toEqual([
+        2, 3,
+      ]);
+      expect(store.getSnapshot()).toMatchObject({
+        progress: { completedTutorials: [1, 2, 3] },
+        progressStatus: "error",
+        pendingCount: 2,
+        saving: false,
+      });
+      expect(store.getSnapshot().progressError).toMatch(/couldn't confirm/);
+    }
+  );
 
   it("does not automatically replay a pending journal from an earlier page", async () => {
     const { store, auth } = await create();
@@ -255,6 +319,7 @@ describe("account progress recovery", () => {
     await settle();
     expect(posts("/api/progress/alice")[0][1]).toEqual({
       completedTutorials: [2],
+      merge: true,
     });
     expect(store.getSnapshot().pendingCount).toBe(0);
   });
@@ -288,6 +353,7 @@ describe("account transitions", () => {
     await store.retryProgress();
     expect(posts("/api/progress/alice").at(-1)?.[1]).toEqual({
       completedTutorials: [1, 2, 3],
+      merge: true,
     });
     expect(store.getSnapshot().pendingCount).toBe(0);
   });
@@ -327,6 +393,7 @@ describe("account transitions", () => {
     await store.retryAccount();
     expect(posts("/api/progress/alice")[0][1]).toEqual({
       completedTutorials: [1, 2],
+      merge: true,
     });
   });
 
@@ -501,6 +568,7 @@ describe("account transitions", () => {
     await store.retryProgress();
     expect(posts("/api/progress/alice").at(-1)?.[1]).toEqual({
       completedTutorials: [1, 2, 3],
+      merge: true,
     });
   });
 

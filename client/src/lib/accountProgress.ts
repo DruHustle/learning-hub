@@ -145,9 +145,9 @@ export function createAccountProgress() {
     const request: Promise<void> = (async () => {
       let succeeded = false;
       try {
-        await auth.saveProgress(user.id, false, sent);
+        const acknowledged = await auth.saveProgress(user.id, false, sent);
         if (!owns(token, user)) return;
-        baseline = sent;
+        baseline = acknowledged ?? sent;
         // Completions added during this write belong to the next serialized save.
         entry.ids = entry.ids.filter(id => !sentIds.includes(id));
         persist(user);
