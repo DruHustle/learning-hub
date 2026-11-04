@@ -108,6 +108,13 @@ the previous API route can use the same retained primary; there is no final data
 copy or write freeze for this compute-only move. If a later migration introduces
 a second writable database, its data reconciliation needs a separate plan.
 
+Production sessions use a Secure, HttpOnly, host-only `Partitioned` cookie with
+`SameSite=None`. Each frontend site has its own browser session, including on
+WebKit when unpartitioned third-party cookies are blocked. Login and logout
+expire the older unpartitioned cookie as well. Keep the exact origin allowlist
+and mutation-origin checks. Browsers without partitioned-cookie support still
+need a qualified same-origin route; do not ask users to disable privacy controls.
+
 The retired `learning-hub-yfe1.onrender.com` deployment guard remains intentional.
 Qualify a new origin rather than silently reviving the retired service. Password
 reset, password change and profile changes remain unavailable in this application;

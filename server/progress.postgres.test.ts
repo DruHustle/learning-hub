@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { createServer } from "node:net";
 import pg from "pg";
-import { signSession } from "./security";
+import { hashPassword, signSession } from "./security";
 
 // This is an explicit CI/local integration command, never a live-DB fallback.
 const configured = process.env.TEST_DATABASE_URL;
@@ -103,7 +103,7 @@ before(async () => {
   child = spawn(process.execPath, ["--import", "tsx", "server/index.ts"], {
     env: {
       ...process.env,
-      NODE_ENV: "test",
+      NODE_ENV: "production",
       DATABASE_URL: apiDatabaseUrl.toString(),
       DATABASE_STARTUP_MODE: "initialize",
       SESSION_SECRET: secret,
@@ -135,7 +135,7 @@ before(async () => {
   for (const id of owners) {
     await pool.query(
       "INSERT INTO learning_hub.users (id, email, password, name) VALUES ($1, $2, $3, $4)",
-      [id, `${id}@example.test`, "scrypt:unused-test-fixture", id]
+      [id, `${id}@example.test`, await hashPassword("isolated-session-password"), id]
     );
   }
   await pool.query(
@@ -149,6 +149,39 @@ beforeEach(async () => {
     "UPDATE learning_hub.progress SET completed_tutorials = CASE WHEN user_id = $1 THEN '[1]'::jsonb ELSE '[8]'::jsonb END, last_visited = NULL WHERE user_id = ANY($2::text[])",
     [alice, [alice, bob]]
   );
+});
+
+test("production login partitions the session and logout expires both cookie generations", async () => {
+  const response = await fetch(base + "/api/login", {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: allowedOrigin, cookie: cookie(bob) },
+    body: JSON.stringify({ email: `${alice}@example.test`, password: "isolated-session-password" }),
+  });
+  assert.equal(response.status, 200);
+  const cookies = response.headers.getSetCookie();
+  assert.equal(cookies.length, 2);
+  assert.match(cookies[0], /Expires=Thu, 01 Jan 1970/i);
+  assert.doesNotMatch(cookies[0], /Partitioned/i);
+  assert.match(cookies[1], /; Partitioned(?:;|$)/);
+  assert.match(cookies[1], /; Secure(?:;|$)/);
+  assert.match(cookies[1], /; HttpOnly(?:;|$)/);
+  assert.match(cookies[1], /; SameSite=None(?:;|$)/);
+  assert.doesNotMatch(cookies[1], /; Domain=/i);
+  const session = cookies[1].split(";")[0];
+  const me = await fetch(base + "/api/me", { headers: { cookie: session } });
+  assert.equal(me.status, 200);
+  assert.equal((await me.json()).user.id, alice);
+  const logout = await fetch(base + "/api/logout", {
+    method: "POST", headers: { cookie: session, origin: allowedOrigin },
+  });
+  assert.equal(logout.status, 204);
+  const cleared = logout.headers.getSetCookie();
+  assert.equal(cleared.length, 2);
+  assert.equal(cleared.filter(value => /Partitioned/i.test(value)).length, 1);
+  for (const value of cleared) {
+    assert.match(value, /Expires=Thu, 01 Jan 1970/i);
+    assert.doesNotMatch(value, /Max-Age=900/);
+  }
 });
 
 after(async () => {

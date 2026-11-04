@@ -38,7 +38,10 @@ async function startServer() {
     }
     next();
   });
-  const cookieOptions = { httpOnly: true, secure: isProduction, sameSite: isProduction ? "none" as const : "lax" as const, path: "/", maxAge: 15 * 60_000 };
+  // Pages calls the API cross-site. Partition the production cookie by frontend
+  // site so browsers can retain it without enabling third-party tracking.
+  const cookieOptions = { httpOnly: true, secure: isProduction, partitioned: isProduction, sameSite: isProduction ? "none" as const : "lax" as const, path: "/", maxAge: 15 * 60_000 };
+  const { maxAge: _maxAge, ...clearOptions } = cookieOptions;
   const authenticate = (req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.cookie?.split(";").map(value => value.trim()).find(value => value.startsWith("learning_session="))?.slice("learning_session=".length);
     const userId = token ? verifySession(token, secret) : null;
@@ -96,6 +99,9 @@ async function startServer() {
       if (user.password.split(":").length === 3) {
         await db.update(users).set({ password: await hashPassword(password) }).where(eq(users.id, user.id));
       }
+      // Retire the previous unpartitioned cookie before issuing a new login.
+      // Otherwise two cookies with the same name can select an older account.
+      if (isProduction) res.clearCookie("learning_session", { ...clearOptions, partitioned: false });
       res.cookie("learning_session", signSession(user.id, secret), cookieOptions);
       res.json({ success: true, user: publicUser(user) });
     } catch (error: any) {
@@ -112,8 +118,8 @@ async function startServer() {
     } catch { res.status(500).json({ error: "Internal server error" }); }
   });
   app.post("/api/logout", (_req, res) => {
-    const { maxAge: _maxAge, ...clearOptions } = cookieOptions;
     res.clearCookie("learning_session", clearOptions);
+    if (isProduction) res.clearCookie("learning_session", { ...clearOptions, partitioned: false });
     res.status(204).end();
   });
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
