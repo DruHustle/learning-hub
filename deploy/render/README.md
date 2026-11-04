@@ -135,3 +135,7 @@ References: [Render Blueprints](https://render.com/docs/blueprint-spec),
 [free services](https://render.com/docs/free),
 [health checks](https://render.com/docs/health-checks), and
 [Vercel external rewrites](https://vercel.com/docs/routing/rewrites).
+
+### Free-service startup
+
+After an idle period, the frontend makes one read-only `/ready` request before sending account operations. A visible connection status remains available for up to two minutes while the host starts. Requests within five minutes share the confirmed readiness state. Readiness failure prevents sending account credentials or progress writes; the user can retry explicitly. Mutating requests keep their existing ten-second timeout and are never automatically replayed. No background keep-alive is used. Browser acceptance must include an actual idle host, login, session restoration, progress persistence and logout.

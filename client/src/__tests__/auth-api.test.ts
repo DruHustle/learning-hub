@@ -6,11 +6,12 @@ vi.mock('axios', () => ({ default: { create: mocks.create } }));
 describe('account API hosting', () => {
   beforeEach(() => {
     vi.resetModules();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ status: "ready" }) }));
     mocks.post.mockReset();
     mocks.create.mockReset().mockReturnValue({ post: mocks.post });
     vi.stubEnv('VITE_API_URL', undefined);
   });
-  afterEach(() => vi.unstubAllEnvs());
+  afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
   it('uses Oracle for production sign-in and retains credentialed requests', async () => {
     vi.stubEnv('PROD', true);

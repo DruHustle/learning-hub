@@ -53,6 +53,12 @@ async function create(user: User | null = alice) {
 
 beforeEach(() => {
   vi.resetModules();
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockResolvedValue({ ok: true, json: async () => ({ status: "ready" }) })
+  );
   vi.stubEnv("VITE_API_URL", "https://accounts.example.test");
   mocks.create
     .mockReset()

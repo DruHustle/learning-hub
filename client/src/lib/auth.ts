@@ -4,6 +4,10 @@
  */
 import { safeLocalStorage } from "./storage";
 import axios from "axios";
+import {
+  AccountConnectionError,
+  ensureAccountConnection,
+} from "./accountConnection";
 
 export interface User {
   id: string;
@@ -115,6 +119,8 @@ export function login(
 
     // Try API for real users
     try {
+      const connection = ensureAccountConnection(API_URL);
+      if (connection) await connection;
       const response = await api.post(`/api/login`, { email, password });
       if (response.data.success && isUser(response.data.user)) {
         return { success: true, user: response.data.user };
@@ -123,7 +129,10 @@ export function login(
     } catch (error: any) {
       return {
         success: false,
-        error: error.response?.data?.error || "Login failed",
+        error:
+          error instanceof AccountConnectionError
+            ? error.message
+            : error.response?.data?.error || "Login failed",
       };
     }
   });
@@ -131,7 +140,11 @@ export function login(
 
 export function logout(): Promise<void> {
   return sequenceAccountMutation(async () => {
-    if (API_URL) await api.post("/api/logout");
+    if (API_URL) {
+      const connection = ensureAccountConnection(API_URL);
+      if (connection) await connection;
+      await api.post("/api/logout");
+    }
   });
 }
 
@@ -168,6 +181,8 @@ export async function restoreCurrentUser(
     return cached;
   if (!API_URL) return null;
   try {
+    const connection = ensureAccountConnection(API_URL, signal);
+    if (connection) await connection;
     const user = (await api.get("/api/me", { signal })).data.user;
     if (user === null) return null;
     if (!isUser(user))
@@ -219,12 +234,17 @@ export async function register(
   if (!API_URL)
     return { success: false, error: "Account registration is unavailable." };
   try {
+    const connection = ensureAccountConnection(API_URL);
+    if (connection) await connection;
     const response = await api.post(`/api/register`, { email, password, name });
     return { success: response.data.success };
   } catch (error: any) {
     return {
       success: false,
-      error: error.response?.data?.error || "Registration failed",
+      error:
+        error instanceof AccountConnectionError
+          ? error.message
+          : error.response?.data?.error || "Registration failed",
     };
   }
 }
@@ -276,6 +296,8 @@ export async function getProgress(
   if (isDemo) {
     return readProgress(`progress_${userId}`);
   }
+  const connection = ensureAccountConnection(API_URL, signal);
+  if (connection) await connection;
   const response = await api.get(
     `/api/progress/${encodeURIComponent(userId)}`,
     { signal }
@@ -293,6 +315,8 @@ export async function saveProgress(
     return;
   }
   const submitted = parseServerProgress(progress);
+  const connection = ensureAccountConnection(API_URL);
+  if (connection) await connection;
   const response = await api.post(
     `/api/progress/${encodeURIComponent(userId)}`,
     // Old servers ignore merge and still replace the full list. Upgrade the API

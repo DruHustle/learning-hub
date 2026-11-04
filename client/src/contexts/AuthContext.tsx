@@ -1,3 +1,4 @@
+import { AccountConnectionStatus } from "../components/AccountConnectionStatus";
 import {
   createContext,
   useContext,
@@ -61,7 +62,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [coordinator, state]
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      <AccountConnectionStatus />
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
