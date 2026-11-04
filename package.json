@@ -18,7 +18,7 @@
     "check": "tsc --noEmit",
     "verify:deployment": "node scripts/verify-deployment.mjs",
     "test:deployment-config": "node --test scripts/verify-deployment.test.mjs",
-    "test:pwa": "node --test scripts/pwa.browser.mjs",
+    "test:pwa": "node --test scripts/pwa.browser.mjs scripts/account-connection.browser.mjs",
     "test:quiz": "node --test scripts/quiz.browser.mjs"
   },
   "dependencies": {

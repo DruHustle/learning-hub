@@ -52,11 +52,12 @@ export function ensureAccountConnection(
     const timer = setTimeout(() => controller.abort(), 120_000);
     pending = (async () => {
       try {
-        // This may wait for a sleeping free host. It never sends credentials,
-        // retries a mutation, or keeps the service awake in the background.
+        // This may wait for a sleeping free host. Same-origin access cookies
+        // retain preview protection; cross-origin readiness sends no cookies.
+        // It never retries a mutation or keeps the service awake in the background.
         const response = await fetch(`${origin}/ready`, {
           method: "GET",
-          credentials: "omit",
+          credentials: "same-origin",
           cache: "no-store",
           signal: controller.signal,
         });

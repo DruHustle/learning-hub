@@ -47,7 +47,7 @@ it("waits visibly for one read-only request before sending login exactly once", 
   expect(fetch).toHaveBeenCalledTimes(1);
   expect(fetch).toHaveBeenCalledWith(
     "https://accounts.example.test/ready",
-    expect.objectContaining({ method: "GET", credentials: "omit" })
+    expect.objectContaining({ method: "GET", credentials: "same-origin" })
   );
   connection.resolve(ready());
   expect(await login).toEqual({ success: true, user });
