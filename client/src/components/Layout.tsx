@@ -16,9 +16,83 @@ import { motion, AnimatePresence } from "framer-motion";
 // ThemeToggle removed
 import { SearchDialog } from "./SearchDialog";
 import { useAuth } from "@/contexts/AuthContext"; // Ensure this path is correct
+import type { AccountProgressState } from "@/lib/accountProgress";
 
 interface LayoutProps {
   children: React.ReactNode;
+}
+
+interface AccountProgressNoticeProps extends AccountProgressState {
+  retryAccount: () => Promise<void>;
+  retryProgress: () => Promise<void>;
+}
+
+export function AccountProgressNotice({
+  loading,
+  accountError,
+  accountRetryLabel,
+  progressStatus,
+  progressError,
+  saving,
+  pendingCount,
+  retryAccount,
+  retryProgress,
+}: AccountProgressNoticeProps) {
+  const error = accountError || progressError;
+  const message =
+    accountError ||
+    (loading
+      ? "Checking your account. You can keep browsing."
+      : progressError ||
+        (progressStatus === "loading"
+          ? "Loading your saved progress. New completions will wait until it is ready."
+          : saving
+            ? "Saving your progress…"
+            : pendingCount > 0
+              ? `${pendingCount} ${pendingCount === 1 ? "completion is" : "completions are"} waiting to sync.`
+              : null));
+  if (!message) return null;
+  const retry = accountError
+    ? retryAccount
+    : !loading &&
+        !saving &&
+        progressStatus !== "loading" &&
+        (progressError || pendingCount > 0)
+      ? retryProgress
+      : null;
+
+  return (
+    <section
+      aria-label="Account and learning progress"
+      className="container py-3"
+    >
+      <div className="flex flex-col gap-3 rounded-lg border border-blue-300/30 bg-[#001A33] p-4 text-sm text-slate-100 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0" role={error ? "alert" : "status"}>
+          <p>{message}</p>
+          {pendingCount > 0 && (
+            <p className="mt-1 text-slate-300">
+              Keep this page open until your progress syncs.
+            </p>
+          )}
+        </div>
+        {retry && (
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-[44px] shrink-0 whitespace-normal border-blue-300/50"
+            disabled={loading}
+            onClick={() => void retry()}
+          >
+            {accountError
+              ? accountRetryLabel
+              : progressError
+                ? "Retry progress sync"
+                : "Sync pending progress"}
+          </Button>
+        )}
+      </div>
+    </section>
+  );
 }
 
 export default function Layout({ children }: LayoutProps) {
@@ -27,7 +101,8 @@ export default function Layout({ children }: LayoutProps) {
   const [showPortfolioButton, setShowPortfolioButton] = useState(false);
   
   // Use the Auth Context
-  const { isAuthenticated, logout, user } = useAuth();
+  const account = useAuth();
+  const { isAuthenticated, logout, user } = account;
 
   // Check if user came from portfolio
   useEffect(() => {
@@ -206,6 +281,8 @@ export default function Layout({ children }: LayoutProps) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AccountProgressNotice {...account} />
 
       {/* Main Content */}
       <main className="flex-1">
