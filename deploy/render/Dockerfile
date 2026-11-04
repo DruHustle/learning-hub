@@ -10,7 +10,7 @@ FROM node:22-bookworm-slim
 ARG APP_REVISION
 LABEL org.opencontainers.image.source="https://github.com/DruHustle/learning-hub" \
       org.opencontainers.image.revision=$APP_REVISION
-ENV NODE_ENV=production PORT=10000 SERVE_FRONTEND=false
+ENV NODE_ENV=production PORT=10000 SERVE_FRONTEND=false DATABASE_STARTUP_MODE=verify
 WORKDIR /app
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/package.json ./package.json

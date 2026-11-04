@@ -1,70 +1,130 @@
-# Render API migration candidate
+# Render API compute migration
 
-Prepared configuration only: no Render service, DNS change or database migration
-has been applied. The frontend remains on its existing Vercel/GitHub Pages hosts.
-Select this nested Blueprint explicitly only after confirming account, region,
-existing service IDs, price and measured capacity. Automatic deployment is off.
+The approved target is a **free web service in My Workspace**, keeping the
+current external PostgreSQL primary. The frontend stays on Vercel/GitHub Pages.
+These files prepare the migration; committing them does not create a service or
+change the active API route. Automatic deployment is off.
 
-`Dockerfile` builds `server/` independently and serves only the API. It excludes
-the frontend assets from the runtime. `SERVE_FRONTEND=false` makes non-API paths
-return JSON 404 instead of a missing or duplicate frontend. Render supplies
-`PORT` and `RENDER_GIT_COMMIT`; `/version` reports that commit unless an explicit
-`APP_REVISION` is set. `/health` is process liveness; `/ready` queries PostgreSQL.
-The platform liveness probe does not repeatedly wake an idle managed database.
-Require `/ready` before cutover and after every deployment; liveness alone is
-not a release acceptance result.
+Select `deploy/render/render.yaml` as the Blueprint path. It defines one Docker
+web service, `learning-hub-api-candidate`, in Frankfurt on the `free` plan. It does
+not create a database, persistent disk, worker or paid service. Use the actual
+qualified service URL returned by Render; the requested name is not proof that
+a particular hostname belongs to this deployment.
 
-## Database and sessions
+`Dockerfile` builds `server/` independently and serves only the API.
+`SERVE_FRONTEND=false` makes other paths return JSON 404. Render supplies `PORT`
+and `RENDER_GIT_COMMIT`; `/version` reports that commit unless `APP_REVISION` is
+explicitly set. Do not copy an old Oracle `APP_REVISION` into the new service.
+`/health` is process liveness; `/ready` queries PostgreSQL. The platform liveness
+probe does not repeatedly wake an idle managed database. Require `/ready` and
+the exact source revision before cutover and after every deployment.
 
-Use an isolated PostgreSQL copy for qualification. Preserve the `learning_hub`
-schema, user IDs, progress, sequences, password hashes and existing session secret.
-Startup creates missing tables and upgrades legacy plaintext passwords, so it is
-not a read-only probe. External PostgreSQL connections must verify TLS according
-to their provider's connection contract. Preserve the current primary until a
-rehearsed copy and restore have succeeded.
+## Required configuration
 
-A self-hosted database on Render needs a separate paid private service and a
-persistent disk, never the API's ephemeral filesystem. Match the source database
-major version and extensions before choosing/pinning an image. Mount the actual
-data directory for that chosen PostgreSQL major version, use separate runtime
-credentials, and retain encrypted database-native backups in independent object
-storage. Backblaze B2, if selected, stores backup objects; it is not a database.
-The migration must include a successful restore rehearsal and retention policy.
-No production database container or backup schedule is created by this candidate.
+The active Oracle runtime is documented in [the Oracle runbook](../oracle/README.md).
+Its protected `/opt/learning-hub/compose.runtime.json` is the authoritative source
+for the current database connection, session signing secret and allowed origins.
+Transfer the resolved values through approved secret handling; never print them
+or commit them. Docker Compose may encode literal dollar signs as `$$`, so use
+the resolved runtime value rather than copying that escaping into Render.
 
-The [optional PostgreSQL container candidate](../database/README.md) provides
-separate Docker-host configuration, verified-TLS connection examples and an
-application network/CA overlay tested against the retained Oracle manifest.
-It preserves the existing primary and session secret. It does not add a database
-to this Render Blueprint; choosing a paid private service and persistent disk,
-then qualifying its image, storage and restore, remains an explicit hosting step.
+| Setting | Render value or source |
+| --- | --- |
+| `DATABASE_URL` | The existing external PostgreSQL connection, preserving the database, role and provider-required verified TLS settings. |
+| `SESSION_SECRET` | The exact current secret, at least 32 characters. Do not generate a replacement during the compute cutover. |
+| `ALLOWED_ORIGINS` | The actual Vercel and Pages frontend origins, separated by commas, copied and checked against the current runtime. |
+| `DATABASE_STARTUP_MODE` | `verify`, already set in both the Blueprint and Docker runtime. |
+| `NODE_ENV` | `production`. |
+| `SERVE_FRONTEND` | `false`. |
+| `PORT` | Render's injected port; the container default is `10000`. |
+
+The three `sync: false` entries prompt for configuration on initial Blueprint
+creation. A later Blueprint sync does not supply or update those values; set
+existing-service secrets explicitly in Render and deploy the updated runtime.
+Missing database access or signing configuration blocks deployment acceptance.
+
+## Preserve the existing database
+
+Moving API compute does not require a database migration. Keep the existing
+`learning_hub` schema, user IDs, progress, sequences, password hashes and database
+backup arrangements. No primary database is copied or replaced by this change.
+The [optional database container](../database/README.md) remains a separate future
+hosting decision and is not required for the approved free web service.
+
+Render starts with `DATABASE_STARTUP_MODE=verify`. Before accepting requests it
+checks the required account/progress columns and rejects pending plaintext
+password upgrades inside a PostgreSQL **read-only transaction**. It does not
+create schemas, create tables, seed records or rewrite credentials. Missing
+schema or pending legacy upgrades stop startup so they can be handled explicitly
+before cutover. An unrecognized mode also stops startup. The default `initialize`
+mode retains the existing local/Oracle setup behavior when no mode is configured.
+
+This guarantee covers startup qualification. Once traffic is routed to the new
+API, normal authorized registration, login upgrades and progress requests can
+write to the retained primary. Run mutation-based qualification against an
+isolated test database or approved test accounts; do not treat the live database
+as an empty fixture.
 
 ## Qualification and frontend cutover
 
-1. Run `corepack pnpm check`, server tests and `build:server`. Build and run the
-   container when Docker is available. Confirm the paid service selection.
-2. Deploy the exact tested revision with an isolated database and approved test
-   credentials. Verify `/version`, `/health`, `/ready`, anonymous rejection,
+1. Run `corepack pnpm check`, `corepack pnpm test` and
+   `corepack pnpm build:server`. Build and run the API container when Docker is
+   available. Confirm the service uses `free`, Frankfurt, one instance and manual
+   deployment before creation.
+2. With an isolated database containing the current schema, verify startup,
    registration/login, owner-isolated progress, logout and restart persistence.
-3. Set `ALLOWED_ORIGINS` to the actual frontend origins. Test browser cookie
-   handling on each host: CORS permission cannot override third-party-cookie
-   blocking. Preserve the working session contract; do not broaden cookie scope.
-4. Use the qualified Render HTTPS origin, without `/api`, for Vercel's
-   `VITE_API_URL` and GitHub repository variable `LEARNING_API_ORIGIN`. The Pages
-   workflow now uses that variable for both build and bundle verification.
-   The old Oracle default remains until the variable is deliberately changed.
-5. The retired `learning-hub-yfe1.onrender.com` guard remains intentional. Do not
-   revive it silently; qualify a new origin, or review that explicit retirement
-   together with proof that the old service now hosts the intended revision.
-6. Pause source writes for the final database copy, verify the new path, then
-   retire only Learning Hub's old Oracle container. Preserve its rollback image,
-   source DB and unrelated shared ingress. Once new writes occur, reconcile them
-   before a database rollback.
+   Also prove that missing schema and legacy plaintext records fail verify-only
+   startup without changing the database.
+3. Deploy the exact tested revision with the retained production connection and
+   current session secret. Check `/version`, `/health`, `/ready` and anonymous
+   `/api/me` rejection. A running process with the wrong revision or an unavailable
+   database is not ready for frontend traffic.
+4. For **Vercel**, prefer a same-origin API route: prepend an external rewrite
+   from `/api/:path*` to the qualified Render origin's `/api/:path*` before the SPA
+   catch-all, and set `VITE_API_URL` to the frontend's own HTTPS origin. The client
+   already appends `/api/...`; do not put `/api` at the end of `VITE_API_URL`.
+   Preserve the API's `Cache-Control: private, no-store` and disable rewrite
+   caching for `/api/:path*` with `x-vercel-enable-rewrite-caching: 0`. Do not add a
+   placeholder upstream to `vercel.json`: add the real, qualified endpoint when
+   it exists. An explicit empty API value means demo-only behavior.
+5. **GitHub Pages** is static and cannot run the Vercel proxy. Its
+   `LEARNING_API_ORIGIN` repository variable feeds both build and bundle
+   verification. A direct qualified Render HTTPS origin, without `/api`, still
+   uses cross-site cookies. Test real browser login, refresh, progress and logout
+   on every supported host/browser before changing that variable. CORS permission
+   cannot override third-party-cookie blocking; retain the existing route until
+   a supported path passes acceptance. Do not broaden cookie scope to hide a
+   failing journey.
+6. After routing changes, test the same account/progress journeys through the
+   actual frontend host, including expired sessions and a sleeping free service.
+   Keep the old Oracle container and route available for rollback until these
+   checks pass. Retire only Learning Hub's old API container afterward, preserving
+   its rollback image, protected runtime and unrelated shared ingress.
 
-Password reset, password change and profile changes are still unavailable in the
-current application; a host relocation does not implement those features.
+Host-only cookies are tied to the old API hostname. Changing the browser-facing
+host can require users to sign in again even when the signing secret is retained.
+Do not claim that retaining the secret alone transfers cookies. A rollback to
+the previous API route can use the same retained primary; there is no final data
+copy or write freeze for this compute-only move. If a later migration introduces
+a second writable database, its data reconciliation needs a separate plan.
 
-References: [Render Docker](https://render.com/docs/docker),
-[persistent disks](https://render.com/docs/disks),
+The retired `learning-hub-yfe1.onrender.com` deployment guard remains intentional.
+Qualify a new origin rather than silently reviving the retired service. Password
+reset, password change and profile changes remain unavailable in this application;
+moving hosts does not implement those features.
+
+## Free service behavior
+
+Render free web services spin down after 15 minutes without inbound traffic and
+can take about a minute to wake. The workspace shares 750 free instance hours
+per month. Free web services do not have persistent disks; the retained external
+PostgreSQL remains the durable store. The client currently has a bounded request
+timeout, so verify the real cold-start journey and user-visible retry behavior.
+This configuration does not promise always-on capacity or create a keepalive job.
+
+References: [Render Blueprints](https://render.com/docs/blueprint-spec),
+[Docker](https://render.com/docs/docker),
+[environment variables](https://render.com/docs/configure-environment-variables),
+[free services](https://render.com/docs/free),
 [health checks](https://render.com/docs/health-checks), and
-[private networking](https://render.com/docs/private-network).
+[Vercel external rewrites](https://vercel.com/docs/routing/rewrites).

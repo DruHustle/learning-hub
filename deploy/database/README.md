@@ -89,14 +89,17 @@ database and ownership of the `learning_hub` schema/objects or equivalent
 reviewed schema and table privileges. Preserve sequence ownership/access.
 Cluster superuser, `CREATEROLE` and `CREATEDB` attributes are unnecessary.
 
-Startup calls `initializeSchema()`, creates the `learning_hub` schema and
+Default startup calls `initializeSchema()`, creates the `learning_hub` schema and
 missing `users`/`progress` tables, and uses a serial progress sequence. Before
 listening, [server/index.ts](../../server/index.ts) reads every stored password
 and upgrades legacy plaintext records; registration and progress updates also
 write these tables. A role restricted to read-only or ordinary table DML can
 break startup. Verify startup DDL, schema ownership, SELECT/INSERT/UPDATE and
 sequence permissions with the isolated copy. This is not a read-only readiness
-probe, and this candidate does not alter those application behaviors.
+probe, and this candidate does not alter those application behaviors. The
+[Render compute migration](../render/README.md) uses the separate
+`DATABASE_STARTUP_MODE=verify` setting to check an existing primary without these
+startup writes; it requires the schema and password upgrades to be complete.
 
 Keep the current external primary until a consistent database-native backup is
 restored into the disposable candidate and verified. Check user IDs, password
