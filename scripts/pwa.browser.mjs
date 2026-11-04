@@ -113,19 +113,68 @@ test("built PWA keeps Pages scope, offline content, safe API requests and prompt
   // paths around the tablet transition against the real built layout.
   const evidence = process.env.PWA_OUTPUT_DIR || path.join(tmpdir(), "learning-hub-pwa");
   await mkdir(evidence, { recursive: true });
-  for (const width of [779, 1024, 1090]) {
-    for (const referred of [false, true]) {
-      const caseName = `header-${referred ? "portfolio" : "direct"}-${width}`;
+  const longAccountName = "AlexandriaNyamadzawo".repeat(10); // Within the API's 255-character limit.
+  const headerCases = [779, 1024, 1090].flatMap((width) =>
+    [false, true].map((referred) => ({ width, referred, authenticated: false })),
+  ).concat(
+    [1280, 1536].map((width) => ({ width, referred: true, authenticated: false })),
+    [340, 1024, 1090, 1280, 1536].map((width) => ({ width, referred: true, authenticated: true })),
+  );
+  for (const { width, referred, authenticated } of headerCases) {
+      const caseName = `header-${authenticated ? "account-" : ""}${referred ? "portfolio" : "direct"}-${width}`;
       await t.test(caseName, { timeout: 20_000 }, async () => {
-        const headerPage = await context.newPage();
+        // Account geometry uses a fresh, entirely mocked session. Service workers
+        // cannot bypass interception, and no production API request is forwarded.
+        const headerContext = authenticated
+          ? await browser.newContext({ serviceWorkers: "block" })
+          : context;
+        const unexpectedApiRequests = [];
+        if (authenticated) {
+          await headerContext.route("**/*", (route) => {
+            const request = route.request();
+            const url = new URL(request.url());
+            const fixture = request.method() === "GET" && (
+              url.pathname === "/api/me"
+                ? { user: { id: "header-layout-user", name: longAccountName, email: "header-layout@example.test", role: "user" } }
+                : url.pathname === "/api/progress/header-layout-user"
+                  ? { completedTutorials: [1] }
+                  : null
+            );
+            if (fixture) return route.fulfill({
+              status: 200,
+              contentType: "application/json",
+              headers: { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true" },
+              body: JSON.stringify(fixture),
+            });
+            if (url.pathname.startsWith("/api/")) {
+              unexpectedApiRequests.push(`${request.method()} ${url.pathname}`);
+              return route.abort();
+            }
+            return [origin, apiOrigin].includes(url.origin) ? route.continue() : route.abort();
+          });
+        }
+        const headerPage = await headerContext.newPage();
         headerPage.setDefaultTimeout(10_000);
         headerPage.on("pageerror", (error) => pageErrors.push(error.message));
+        const checkAccountControls = async (region) => {
+          if (!authenticated) return;
+          const logout = region.getByRole("button", { name: "Logout", exact: true });
+          assert.equal(await logout.isVisible(), true, "Logout has a visible, named control");
+          const rect = await logout.boundingBox();
+          assert.ok(rect.width >= 44 && rect.height >= 44, "Logout remains at least 44 × 44");
+          assert.ok(rect.x >= -1 && rect.x + rect.width <= width + 1 && rect.y >= -1 && rect.y + rect.height <= 761,
+            `Logout stays reachable: ${JSON.stringify(rect)}`);
+          assert.ok((await region.ariaSnapshot()).includes(longAccountName), "The full account name remains accessible");
+        };
         try {
           await headerPage.setViewportSize({ width, height: 760 });
           await headerPage.goto(origin + base, {
             referer: referred ? "https://andrewgotora.com/" : undefined,
           });
           await headerPage.getByRole("heading", { name: "Master AI Solutions on Learning Hub" }).waitFor();
+          if (authenticated) {
+            await headerPage.locator("header").getByRole("button", { name: "Logout", exact: true, includeHidden: true }).waitFor({ state: "attached" });
+          }
           const returnLink = headerPage.locator('header a[href="https://andrewgotora.com/"]');
           if (referred) await returnLink.waitFor({ state: "attached" });
           else assert.equal(await returnLink.count(), 0, "Direct visits do not inherit another tab's referral");
@@ -175,6 +224,9 @@ test("built PWA keeps Pages scope, offline content, safe API requests and prompt
             const menuBox = await menu.boundingBox();
             assert.ok(menuBox.x >= -1 && menuBox.x + menuBox.width <= width + 1, "Expanded menu fits the viewport");
             await headerPage.screenshot({ path: path.join(evidence, `${caseName}-menu.png`) });
+            assert.ok(await headerPage.evaluate(() => document.documentElement.scrollWidth) <= width + 1,
+              "Expanded account menu does not overflow the viewport");
+            await checkAccountControls(menu);
             await menu.getByRole("link", { name: "Tutorials", exact: true }).click();
             await headerPage.waitForURL("**/learning-hub/#/tutorials");
             await menu.waitFor({ state: "hidden" });
@@ -182,17 +234,19 @@ test("built PWA keeps Pages scope, offline content, safe API requests and prompt
             assert.ok(geometry.navigation.width > 0, "A navigation route is available");
             assert.ok(geometry.navigation.left >= geometry.brand.right - 1, "Desktop navigation does not overlap the brand");
             if (referred) assert.equal(await returnLink.isVisible(), true);
+            await checkAccountControls(headerPage.locator("header"));
             await headerPage.locator("header nav").getByRole("link", { name: "Tutorials", exact: true }).click();
             await headerPage.waitForURL("**/learning-hub/#/tutorials");
           }
+          assert.deepEqual(unexpectedApiRequests, [], "Header navigation does not mutate the fixture account");
         } catch (error) {
           await headerPage.screenshot({ path: path.join(evidence, `${caseName}-failure.png`) }).catch(() => {});
           throw error;
         } finally {
           await headerPage.close();
+          if (authenticated) await headerContext.close();
         }
       });
-    }
   }
 
   const registration = await page.evaluate(async () => {

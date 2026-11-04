@@ -186,16 +186,18 @@ export default function Layout({ children }: LayoutProps) {
 
             {/* Auth Section */}
             {isAuthenticated ? (
-              <div className="flex items-center gap-3 ml-2">
-                <div className="flex items-center gap-2 text-slate-300 text-sm font-medium bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
-                  <UserIcon className="w-4 h-4 text-blue-400" />
-                  <span className="hidden lg:inline">{user?.name}</span>
+              <div className="flex shrink-0 items-center gap-3 ml-2">
+                <div title={user?.name} className="flex items-center gap-2 text-slate-300 text-sm font-medium bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                  <UserIcon aria-hidden="true" className="w-4 h-4 shrink-0 text-blue-400" />
+                  <span className="sr-only">Signed in as {user?.name}</span>
+                  <span aria-hidden="true" className="hidden max-w-32 truncate 2xl:block">{user?.name}</span>
                 </div>
                 <Button 
                   variant="ghost" 
                   size="sm" 
+                  aria-label="Logout"
                   onClick={() => logout()}
-                  className="text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors gap-2"
+                  className="min-h-[44px] min-w-[44px] text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors gap-2"
                 >
                   <LogOut className="w-4 h-4" />
                   <span className="hidden xl:inline">Logout</span>
@@ -250,13 +252,15 @@ export default function Layout({ children }: LayoutProps) {
             <div className="container py-4 flex flex-col gap-4">
               {/* Mobile Auth Section */}
               {isAuthenticated ? (
-                <div className="flex items-center justify-between py-2 border-b border-white/5">
-                  <span className="text-blue-400 text-sm font-bold flex items-center gap-2">
-                    <UserIcon className="w-4 h-4" /> {user?.name}
+                <div className="flex items-center justify-between gap-3 py-2 border-b border-white/5">
+                  <span className="min-w-0 flex-1 text-blue-400 text-sm font-bold flex items-center gap-2">
+                    <UserIcon aria-hidden="true" className="w-4 h-4 shrink-0" />
+                    <span title={user?.name} className="truncate">{user?.name}</span>
                   </span>
                   <button 
+                    aria-label="Logout"
                     onClick={() => logout()} 
-                    className="text-red-400 text-sm flex items-center gap-2 font-medium"
+                    className="min-h-[44px] min-w-[44px] shrink-0 text-red-400 text-sm flex items-center gap-2 font-medium"
                   >
                     <LogOut className="w-4 h-4" /> Logout
                   </button>
