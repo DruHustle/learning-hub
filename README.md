@@ -41,6 +41,7 @@ Use the pnpm version pinned in `package.json`. After `pnpm build`, run:
 ```bash
 pnpm exec playwright install --with-deps chromium
 pnpm test:pwa
+pnpm test:quiz
 ```
 
 These checks load the production build at `/learning-hub/`, verify offline
@@ -48,6 +49,10 @@ navigation and uncached account requests, then build a second release to check
 waiting-worker activation and removal of the old HTML cache revision. They do
 not contact the production API. Both PR verification and Pages deployment run
 them alongside the existing type checks, tests and moderate production audit.
+
+The quiz browser regression verifies that each question clears its radio selection,
+including consecutive questions with the same answer position. It uses the real
+built UI without contacting an account API or saving progress.
 
 The scoped `workbox-build>glob` and `filelist>minimatch` overrides fix the PWA
 tooling audit without changing the PWA plugin or its registration/cache policy.

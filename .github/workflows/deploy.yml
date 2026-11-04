@@ -63,6 +63,9 @@ jobs:
           VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-api.152-70-22-84.sslip.io' }}
         run: pnpm test:pwa
 
+      - name: Verify quiz question selection resets
+        run: pnpm test:quiz
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
