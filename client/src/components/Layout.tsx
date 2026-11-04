@@ -145,7 +145,7 @@ export default function Layout({ children }: LayoutProps) {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-4">
+          <nav className="hidden lg:flex items-center gap-4">
             {showPortfolioButton && (
               <a 
                 href="https://druhustle.github.io/portifolio/" 
@@ -212,11 +212,14 @@ export default function Layout({ children }: LayoutProps) {
           </nav>
 
           {/* Mobile Menu Toggle */}
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-2 lg:hidden">
             <SearchDialog />
 
             <button
-              className="p-2 text-slate-400 hover:text-white"
+              className="min-h-[44px] min-w-[44px] p-2 text-slate-400 hover:text-white"
+              aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-navigation"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -229,10 +232,11 @@ export default function Layout({ children }: LayoutProps) {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
+            id="mobile-navigation"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-b border-white/5 bg-[#001A33]"
+            className="lg:hidden border-b border-white/5 bg-[#001A33]"
           >
             <div className="container py-4 flex flex-col gap-4">
               {/* Mobile Auth Section */}
