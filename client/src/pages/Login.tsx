@@ -15,10 +15,12 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
 const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsLoading(true);
+  setLoginError(null);
 
   try {
     const result = await login(email, password);
@@ -26,10 +28,10 @@ const handleLogin = async (e: React.FormEvent) => {
       toast.success("Login successful!");
       navigate("/"); 
     } else {
-      toast.error(result.error || "Login failed");
+      setLoginError(result.error || "Login failed");
     }
   } catch (error) {
-    toast.error("Network error. Please try again.");
+    setLoginError("Network error. Please try again.");
   } finally {
     setIsLoading(false);
   }
@@ -121,6 +123,20 @@ const handleLogin = async (e: React.FormEvent) => {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
+
+          {loginError && (
+            <div role="alert" className="space-y-2 text-sm">
+              <p>{loginError}</p>
+              {window.location.origin === "https://druhustle.github.io" && (
+                <a
+                  href="https://tech-learning-hub-app.vercel.app/#/login"
+                  className="text-primary underline underline-offset-4"
+                >
+                  Continue sign-in on the main Learning Hub site
+                </a>
+              )}
+            </div>
+          )}
 
           <div className="text-center text-sm">
             <span className="text-muted-foreground">Don't have an account? </span>

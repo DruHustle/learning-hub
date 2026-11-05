@@ -86,6 +86,17 @@ GitHub Pages hosts the browser application. Real accounts require a separate Nod
 
 Production builds use the qualified Render API at `https://learning-hub-api-candidate.onrender.com` by default. Vercel builds use the explicit `same-origin` mode and qualified proxy routes, while GitHub Pages connects to Render directly. Set `VITE_API_URL` to override it; an explicit empty value keeps demo-only behavior. Development without a configured API keeps demo accounts and learning progress local. Sessions use signed, HTTP-only cookies and expire after 15 minutes. Registration requires a password of at least 12 characters. Existing plaintext password records are hashed before the API begins accepting requests. Password reset, password change, and real account profile updates remain unavailable until those features are implemented; the UI reports that limitation.
 
+Sign-in confirms the returned identity with a credentialed `/api/me` request before
+accepting the account or syncing progress. A blocked cookie or an interrupted
+session check leaves sign-in unconfirmed and never automatically repeats the
+password request. On GitHub Pages, the error offers the existing
+[main Learning Hub site](https://tech-learning-hub-app.vercel.app/#/login),
+whose same-origin API supports browsers that block cross-site cookies.
+The Pages API uses partitioned cookies; WebKit 26.0 cannot retain that session,
+while the project-pinned WebKit 27.2 passes login, reload, progress and logout.
+Keep browser privacy controls enabled and test both the current browser and
+the older-browser fallback when changing account hosting.
+
 Progress completions send `merge: true` with the full known list. The updated API
 atomically unions those IDs with the saved list and returns the acknowledged
 progress. Calls without that flag, or with `merge: false`, retain full replacement

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ post: vi.fn(), create: vi.fn() }));
+const mocks = vi.hoisted(() => ({ post: vi.fn(), get: vi.fn(), create: vi.fn() }));
 vi.mock('axios', () => ({ default: { create: mocks.create } }));
 
 describe('account API hosting', () => {
@@ -8,7 +8,8 @@ describe('account API hosting', () => {
     vi.resetModules();
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ status: "ready" }) }));
     mocks.post.mockReset();
-    mocks.create.mockReset().mockReturnValue({ post: mocks.post });
+    mocks.get.mockReset();
+    mocks.create.mockReset().mockReturnValue({ post: mocks.post, get: mocks.get });
     vi.stubEnv('VITE_API_URL', undefined);
   });
   afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
@@ -17,6 +18,7 @@ describe('account API hosting', () => {
     vi.stubEnv('PROD', true);
     const user = { id: 'real-account', email: 'person@example.test', name: 'Person', role: 'user' };
     mocks.post.mockResolvedValue({ data: { success: true, user } });
+    mocks.get.mockResolvedValue({ data: { user } });
     const { login } = await import('../lib/auth');
     expect(await login(user.email, 'test-only-password')).toEqual({ success: true, user });
     expect(mocks.create).toHaveBeenCalledWith({
@@ -24,6 +26,22 @@ describe('account API hosting', () => {
       timeout: 10_000, withCredentials: true,
     });
     expect(mocks.post).toHaveBeenCalledWith('/api/login', { email: user.email, password: 'test-only-password' });
+    expect(mocks.get).toHaveBeenCalledWith('/api/me');
+  });
+
+  it.each(['blocked-cookie', 'different-account', 'network-error'])('does not accept an unverified browser session (%s)', async failure => {
+    vi.stubEnv('PROD', true);
+    const user = { id: 'real-account', email: 'person@example.test', name: 'Person', role: 'user' };
+    mocks.post.mockResolvedValue({ data: { success: true, user } });
+    if (failure === 'different-account') mocks.get.mockResolvedValue({ data: { user: { ...user, id: 'older-account' } } });
+    else mocks.get.mockRejectedValue(failure === 'blocked-cookie' ? { response: { status: 401 } } : new Error('network'));
+    const { login } = await import('../lib/auth');
+    const result = await login(user.email, 'test-only-password');
+    expect(result.success).toBe(false);
+    expect(result.user).toBeUndefined();
+    expect(result.error).toContain('session');
+    expect(mocks.post).toHaveBeenCalledTimes(1);
+    expect(mocks.get).toHaveBeenCalledTimes(1);
   });
 
   it('keeps Vercel account requests on the actual browser host', async () => {
