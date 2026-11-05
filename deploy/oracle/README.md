@@ -69,8 +69,10 @@ snapshot. Restore and reverify the intended frontend after a bounded rehearsal.
 ## Frontend release checks
 
 Use the existing Vercel project and reviewed `DruHustle/learning-hub` source.
-The current owner-controlled Vercel release is manual; do not assume a Git binding
-or automatic promotion. GitHub Pages retains its checked main-branch workflow.
+The existing Vercel project is linked to `DruHustle/learning-hub` on `main`;
+main merges can publish a production frontend automatically. Read back the exact
+public-domain deployment after each merge, even when a staged artifact was
+promoted manually. GitHub Pages also retains its checked main-branch workflow.
 Run `pnpm build && pnpm verify:deployment` before release. Vercel and GitHub
 Pages verify the shipped JavaScript contains the configured HTTPS API origin
 and no retired Render address. `VITE_API_URL` must be an origin without `/api`;
