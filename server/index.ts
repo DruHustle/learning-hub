@@ -64,6 +64,7 @@ async function startServer() {
     next();
   };
   
+  let stopping = false;
   const server = createServer(app);
 
   // API Routes
@@ -122,12 +123,13 @@ async function startServer() {
     if (isProduction) res.clearCookie("learning_session", { ...clearOptions, partitioned: false });
     res.status(204).end();
   });
-  app.get("/health", (_req, res) => res.json({ status: "ok" }));
+  app.get("/health", (_req, res) => res.status(stopping ? 503 : 200).json({ status: stopping ? "stopping" : "ok" }));
   app.get("/version", (_req, res) => {
     res.setHeader("Cache-Control", "no-store");
     res.json({ service: "learning-hub", revision: process.env.APP_REVISION || process.env.RENDER_GIT_COMMIT || null });
   });
   app.get("/ready", async (_req, res) => {
+    if (stopping) return res.status(503).json({ status: "not-ready" });
     try { if (!connection) throw new Error(); await connection.query("SELECT 1"); res.json({ status: "ready" }); }
     catch { res.status(503).json({ status: "not-ready" }); }
   });
@@ -209,6 +211,34 @@ async function startServer() {
     }
   }
   const port = process.env.PORT || 3001;
+
+  // Render sends SIGTERM when replacing an instance. Drain accepted requests
+  // before closing their database pool so account/progress responses can finish.
+  // A bounded deadline remains below the platform's default shutdown window.
+  const shutdown = () => {
+    if (stopping) return;
+    stopping = true;
+    const deadline = setTimeout(() => {
+      console.error("Graceful shutdown timed out");
+      server.closeAllConnections();
+      process.exit(1);
+    }, 20_000);
+    deadline.unref();
+    server.close(async error => {
+      if (error) process.exitCode = 1;
+      try {
+        await connection?.end();
+        clearTimeout(deadline);
+      }
+      catch {
+        console.error("Database shutdown failed");
+        process.exitCode = 1;
+      }
+    });
+    server.closeIdleConnections();
+  };
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
 
   server.listen(Number(port), "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${port}/`);

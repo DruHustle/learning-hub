@@ -20,6 +20,12 @@ explicitly set. Do not copy an old Oracle `APP_REVISION` into the new service.
 probe does not repeatedly wake an idle managed database. Require `/ready` and
 the exact source revision before cutover and after every deployment.
 
+On `SIGTERM` or `SIGINT`, the API stops accepting connections, reports that it is
+stopping, and finishes accepted HTTP requests before closing its PostgreSQL pool.
+An unresponsive request or database shutdown is bounded by a 20-second deadline,
+inside Render's default shutdown window. The isolated server tests exercise a
+partially received request during both signals without touching a database.
+
 ## Required configuration
 
 The active Oracle runtime is documented in [the Oracle runbook](../oracle/README.md).

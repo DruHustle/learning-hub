@@ -13,7 +13,7 @@
     "predeploy": "pnpm build",
     "deploy": "gh-pages -d dist",
     "preview": "vite preview --host",
-    "test:server": "node --test --import tsx server/security.test.ts server/http.test.ts server/startup.test.ts",
+    "test:server": "node --test --import tsx server/security.test.ts server/http.test.ts server/startup.test.ts server/shutdown.test.ts",
     "test:progress-postgres": "node --test --import tsx server/progress.postgres.test.ts",
     "check": "tsc --noEmit",
     "verify:deployment": "node scripts/verify-deployment.mjs",
