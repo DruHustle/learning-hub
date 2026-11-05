@@ -100,13 +100,14 @@ Use the PostgreSQL connection URL from your provider for `DATABASE_URL`; externa
 
 ## Backend hosting
 
-The API runs on the shared Oracle VM **Software Engineering Backend**. See
-[Oracle deployment and rollback](deploy/oracle/README.md). Existing managed
-PostgreSQL data and signed HTTP-only session cookies are retained.
+The Vercel application's account API now uses the existing free Render service
+through same-origin routes. The original managed PostgreSQL database and session
+signing secret are retained. The Oracle service remains available for rollback;
+see [Oracle deployment and rollback](deploy/oracle/README.md).
 
-The [Render API compute migration](deploy/render/README.md) prepares a free web
+The [Render API compute migration](deploy/render/README.md) uses a free web
 service while retaining the current external PostgreSQL primary. Its API-only
 Docker runtime verifies the existing schema in a read-only startup transaction
 and stops rather than creating tables or rewriting credentials. The runbook covers
 protected configuration, source-revision checks and frontend cutover. These
-source changes do not change the active backend or database by themselves.
+source changes do not change a deployed backend or database by themselves.

@@ -1,6 +1,6 @@
 # Oracle backend
 
-The API runs on the shared **Software Engineering Backend** VM, hostname
+The retained rollback API runs on the shared **Software Engineering Backend** VM, hostname
 `software-engineering-backend`, ARM64, at `152.70.22.84`. The Onesa VM is separate.
 
 - API: `https://learning-api.152-70-22-84.sslip.io`
@@ -57,15 +57,20 @@ external ingress network declared in its Compose file. Back up and validate its
 configuration before graceful reloads. Do not restart sibling applications or
 duplicate the existing singleton IoT worker.
 
-Oracle releases are manual and independent from frontend releases. The former
-Render service stays suspended with automatic deployment disabled. Retain the
+Oracle releases are manual and independent from frontend releases. The retired
+`learning-hub-yfe1` Render service stays suspended. The separately qualified
+`learning-hub-api-candidate` service now serves the Vercel application; its automatic
+deployment remains disabled. Retain the
 previous image and manifest; restore its tag and run the same Compose update
-command to roll back. An emergency Render rollback requires explicitly resuming
-and checking that service before restoring the frontend API destination.
+command to roll back. Frontend rollback must select a retained, verified deployment
+and keep the same database. Never overwrite newer progress with an older database
+snapshot. Restore and reverify the intended frontend after a bounded rehearsal.
 
 ## Frontend release checks
 
-Vercel is connected to `DruHustle/learning-hub`, production branch `main`.
+Use the existing Vercel project and reviewed `DruHustle/learning-hub` source.
+The current owner-controlled Vercel release is manual; do not assume a Git binding
+or automatic promotion. GitHub Pages retains its checked main-branch workflow.
 Run `pnpm build && pnpm verify:deployment` before release. Vercel and GitHub
 Pages verify the shipped JavaScript contains the configured HTTPS API origin
 and no retired Render address. `VITE_API_URL` must be an origin without `/api`;
