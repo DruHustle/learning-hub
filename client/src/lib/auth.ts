@@ -127,7 +127,21 @@ export function login(
       if (connection) await connection;
       const response = await api.post(`/api/login`, { email, password });
       if (response.data.success && isUser(response.data.user)) {
-        return { success: true, user: response.data.user };
+        // A successful password response does not prove that the browser kept
+        // the HttpOnly cookie. Confirm the same account before caching identity
+        // or allowing progress writes. Never replay the login on failure.
+        try {
+          const user = (await api.get("/api/me")).data.user;
+          if (isUser(user) && user.id === response.data.user.id)
+            return { success: true, user };
+        } catch {
+          // A blocked cookie and an unavailable session check both fail closed.
+        }
+        return {
+          success: false,
+          error:
+            "Your sign-in session could not be confirmed. Your browser may be blocking the account cookie, or the connection may have been interrupted.",
+        };
       }
       return { success: false, error: "Invalid credentials" };
     } catch (error: any) {

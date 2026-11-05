@@ -422,9 +422,10 @@ describe("account transitions", () => {
 
   it("ignores an older account restoration after a newer login, including cache writes", async () => {
     const restore = deferred<{ data: { user: User } }>();
-    mocks.get.mockImplementation((path: string) =>
-      path === "/api/me" ? restore.promise : Promise.resolve(reply([8]))
-    );
+    mocks.get.mockImplementationOnce(() => restore.promise)
+      .mockImplementation((path: string) => Promise.resolve(
+        path === "/api/me" ? { data: { user: bob } } : reply([8])
+      ));
     const { store, auth } = await create(null);
     const initial = store.start();
     await settle();
@@ -444,10 +445,15 @@ describe("account transitions", () => {
     const write = deferred<typeof acknowledgement>();
     const { store, auth } = await create();
     await store.start();
+    let sessionUser = alice;
+    mocks.get.mockImplementation(async (path: string) =>
+      path === "/api/me" ? { data: { user: sessionUser } } : reply([8])
+    );
     mocks.post.mockImplementation((path: string, body?: { email?: string }) => {
       if (path === "/api/progress/alice") return write.promise;
+      sessionUser = body?.email === bob.email ? bob : alice;
       return Promise.resolve({
-        data: { success: true, user: body?.email === bob.email ? bob : alice },
+        data: { success: true, user: sessionUser },
       });
     });
     store.markAsCompleted(2);
@@ -466,7 +472,8 @@ describe("account transitions", () => {
 
     const oldRead = deferred<ReturnType<typeof reply>>();
     mocks.get.mockImplementation((path: string) =>
-      path === "/api/progress/alice"
+      path === "/api/me" ? Promise.resolve({ data: { user: sessionUser } })
+      : path === "/api/progress/alice"
         ? oldRead.promise
         : Promise.resolve(reply([8]))
     );
@@ -485,6 +492,9 @@ describe("account transitions", () => {
     const signingOut = deferred<{ status: number }>();
     const { store, auth } = await create();
     await store.start();
+    mocks.get.mockImplementation(async (path: string) =>
+      path === "/api/me" ? { data: { user: bob } } : reply([8])
+    );
     mocks.post.mockImplementation((path: string) =>
       path === "/api/logout"
         ? signingOut.promise
