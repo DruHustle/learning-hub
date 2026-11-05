@@ -1,9 +1,10 @@
 # Render API compute migration
 
 The approved target is a **free web service in My Workspace**, keeping the
-current external PostgreSQL primary. The frontend stays on Vercel/GitHub Pages.
-These files prepare the migration; committing them does not create a service or
-change the active API route. Automatic deployment is off.
+current external PostgreSQL primary. The frontend stays on Vercel/GitHub Pages. The qualified existing API is
+`https://learning-hub-api-candidate.onrender.com`. Source defaults select it;
+production routing changes still require an explicit verified release. Automatic
+Render deployment remains off.
 
 Select `deploy/render/render.yaml` as the Blueprint path. It defines one Docker
 web service, `learning-hub-api-candidate`, in Frankfurt on the `free` plan. It does
@@ -81,12 +82,14 @@ as an empty fixture.
    database is not ready for frontend traffic.
 4. For **Vercel**, prefer a same-origin API route: prepend an external rewrite
    from `/api/:path*` to the qualified Render origin's `/api/:path*` before the SPA
-   catch-all, and set `VITE_API_URL` to the frontend's own HTTPS origin. The client
+   catch-all. The checked-in Vercel build uses `VITE_API_URL=same-origin`, which
+   resolves to the actual browser host for staged deployments and production. The client
    already appends `/api/...`; do not put `/api` at the end of `VITE_API_URL`.
    Preserve the API's `Cache-Control: private, no-store` and disable rewrite
    caching for `/api/:path*` with `x-vercel-enable-rewrite-caching: 0`. Do not add a
-   placeholder upstream to `vercel.json`: add the real, qualified endpoint when
-   it exists. An explicit empty API value means demo-only behavior.
+   placeholder upstream: the checked-in `/api`, `/ready`, `/version` and `/health`
+   routes use the qualified Render endpoint. An explicit empty API value still
+   means demo-only behavior. `same-origin` is intended for Vercel, not Pages.
 5. **GitHub Pages** is static and cannot run the Vercel proxy. Its
    `LEARNING_API_ORIGIN` repository variable feeds both build and bundle
    verification. A direct qualified Render HTTPS origin, without `/api`, still

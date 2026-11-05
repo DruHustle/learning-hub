@@ -23,10 +23,14 @@ export interface Progress {
 }
 
 const SESSION_KEY = "imsop_session";
-const API_URL = (
+const configuredAPI = (
   import.meta.env.VITE_API_URL ??
-  (import.meta.env.PROD ? "https://learning-api.152-70-22-84.sslip.io" : "")
+  (import.meta.env.PROD ? "https://learning-hub-api-candidate.onrender.com" : "")
 ).replace(/\/+$/, "");
+// Vercel keeps accounts on the current host, including protected staged builds.
+// The explicit empty value continues to mean demo-only mode.
+const API_URL =
+  configuredAPI === "same-origin" ? window.location.origin : configuredAPI;
 const api = axios.create({
   baseURL: API_URL,
   timeout: 10_000,

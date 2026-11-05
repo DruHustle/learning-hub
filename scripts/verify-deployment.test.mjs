@@ -16,21 +16,26 @@ async function verify(origin, source) {
   } finally { await rm(output, { recursive: true, force: true }); }
 }
 test("ships the configured origin and supports an intentional custom API", async () => {
-  for (const origin of ["https://learning-api.152-70-22-84.sslip.io", "https://custom.example.test"]) {
+  for (const origin of ["https://learning-hub-api-candidate.onrender.com", "https://custom.example.test"]) {
     assert.equal((await verify(origin, `const api = ${JSON.stringify(origin)};`)).status, 0);
   }
 });
 test("rejects the old production API and the duplicated /api prefix defect", async () => {
-  for (const origin of ["https://learning-hub-yfe1.onrender.com", "https://learning-api.152-70-22-84.sslip.io/api"]) {
+  for (const origin of ["https://learning-hub-yfe1.onrender.com", "https://learning-hub-api-candidate.onrender.com/api"]) {
     assert.notEqual((await verify(origin, `const api = ${JSON.stringify(origin)};`)).status, 0);
   }
 });
 test("rejects a stale built bundle even when configuration has already been fixed", async () => {
-  const result = await verify("https://learning-api.152-70-22-84.sslip.io", 'const api = "https://learning-hub-yfe1.onrender.com";');
+  const result = await verify("https://learning-hub-api-candidate.onrender.com", 'const api = "https://learning-hub-yfe1.onrender.com";');
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /Built frontend still references/);
 });
 test("rejects a different compiled origin and preserves explicit demo-only builds", async () => {
   assert.notEqual((await verify("https://custom.example.test", 'const api = "https://other.example.test";')).status, 0);
   assert.equal((await verify("", "const demoOnly = true;")).status, 0);
+});
+
+test("first-party mode requires compiled current-origin routing and preserves explicit demo mode", async () => {
+  assert.equal((await verify("same-origin", "const api = window.location.origin;")).status, 0);
+  assert.notEqual((await verify("same-origin", "const api = \"https://other.example.test\";")).status, 0);
 });

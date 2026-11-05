@@ -32,7 +32,7 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
-      VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-api.152-70-22-84.sslip.io' }}
+      VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-hub-api-candidate.onrender.com' }}
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4

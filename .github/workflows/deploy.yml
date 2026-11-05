@@ -47,12 +47,12 @@ jobs:
 
       - name: Build
         env:
-          VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-api.152-70-22-84.sslip.io' }}
+          VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-hub-api-candidate.onrender.com' }}
         run: pnpm build
 
       - name: Verify production API configuration and built bundle
         env:
-          VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-api.152-70-22-84.sslip.io' }}
+          VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-hub-api-candidate.onrender.com' }}
         run: pnpm verify:deployment
 
       - name: Install Chromium for PWA verification
@@ -60,7 +60,7 @@ jobs:
 
       - name: Verify PWA offline, update and API cache behavior
         env:
-          VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-api.152-70-22-84.sslip.io' }}
+          VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-hub-api-candidate.onrender.com' }}
         run: pnpm test:pwa
 
       - name: Verify quiz question selection resets
