@@ -16,9 +16,86 @@ import { motion, AnimatePresence } from "framer-motion";
 // ThemeToggle removed
 import { SearchDialog } from "./SearchDialog";
 import { useAuth } from "@/contexts/AuthContext"; // Ensure this path is correct
+import type { AccountProgressState } from "@/lib/accountProgress";
+import { safeSessionStorage } from "@/lib/storage";
+
+const PORTFOLIO_URL = "https://andrewgotora.com/";
 
 interface LayoutProps {
   children: React.ReactNode;
+}
+
+interface AccountProgressNoticeProps extends AccountProgressState {
+  retryAccount: () => Promise<void>;
+  retryProgress: () => Promise<void>;
+}
+
+export function AccountProgressNotice({
+  loading,
+  accountError,
+  accountRetryLabel,
+  progressStatus,
+  progressError,
+  saving,
+  pendingCount,
+  retryAccount,
+  retryProgress,
+}: AccountProgressNoticeProps) {
+  const error = accountError || progressError;
+  const message =
+    accountError ||
+    (loading
+      ? "Checking your account. You can keep browsing."
+      : progressError ||
+        (progressStatus === "loading"
+          ? "Loading your saved progress. New completions will wait until it is ready."
+          : saving
+            ? "Saving your progress…"
+            : pendingCount > 0
+              ? `${pendingCount} ${pendingCount === 1 ? "completion is" : "completions are"} waiting to sync.`
+              : null));
+  if (!message) return null;
+  const retry = accountError
+    ? retryAccount
+    : !loading &&
+        !saving &&
+        progressStatus !== "loading" &&
+        (progressError || pendingCount > 0)
+      ? retryProgress
+      : null;
+
+  return (
+    <section
+      aria-label="Account and learning progress"
+      className="container py-3"
+    >
+      <div className="flex flex-col gap-3 rounded-lg border border-blue-300/30 bg-[#001A33] p-4 text-sm text-slate-100 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0" role={error ? "alert" : "status"}>
+          <p>{message}</p>
+          {pendingCount > 0 && (
+            <p className="mt-1 text-slate-300">
+              Keep this page open until your progress syncs.
+            </p>
+          )}
+        </div>
+        {retry && (
+          <Button
+            type="button"
+            variant="outline"
+            className="min-h-[44px] shrink-0 whitespace-normal border-blue-300/50"
+            disabled={loading}
+            onClick={() => void retry()}
+          >
+            {accountError
+              ? accountRetryLabel
+              : progressError
+                ? "Retry progress sync"
+                : "Sync pending progress"}
+          </Button>
+        )}
+      </div>
+    </section>
+  );
 }
 
 export default function Layout({ children }: LayoutProps) {
@@ -27,17 +104,24 @@ export default function Layout({ children }: LayoutProps) {
   const [showPortfolioButton, setShowPortfolioButton] = useState(false);
   
   // Use the Auth Context
-  const { isAuthenticated, logout, user } = useAuth();
+  const account = useAuth();
+  const { isAuthenticated, logout, user } = account;
 
   // Check if user came from portfolio
   useEffect(() => {
-    const referrer = document.referrer;
-    const fromPortfolio = referrer.includes('druhustle.github.io/portifolio') || 
-                          referrer.includes('portfolio') ||
-                          sessionStorage.getItem('fromPortfolio') === 'true';
+    let fromPortfolio = safeSessionStorage.getItem('fromPortfolio') === 'true';
+    try {
+      const referrer = new URL(document.referrer);
+      fromPortfolio ||= referrer.protocol === 'https:' && (
+        referrer.hostname === 'andrewgotora.com' ||
+        referrer.hostname === 'www.andrewgotora.com' ||
+        (referrer.hostname === 'druhustle.github.io' &&
+          /^\/(?:portfolio|portifolio)(?:\/|$)/.test(referrer.pathname))
+      );
+    } catch { /* Empty or malformed referrers do not identify the portfolio. */ }
     
     if (fromPortfolio) {
-      sessionStorage.setItem('fromPortfolio', 'true');
+      safeSessionStorage.setItem('fromPortfolio', 'true');
       setShowPortfolioButton(true);
     }
   }, []);
@@ -70,10 +154,10 @@ export default function Layout({ children }: LayoutProps) {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-4">
+          <nav className="hidden lg:flex items-center gap-4">
             {showPortfolioButton && (
               <a 
-                href="https://druhustle.github.io/portifolio/" 
+                href={PORTFOLIO_URL}
                 className="flex items-center gap-2 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors mr-4 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20"
               >
                 <ArrowLeft className="w-3 h-3" />
@@ -102,16 +186,18 @@ export default function Layout({ children }: LayoutProps) {
 
             {/* Auth Section */}
             {isAuthenticated ? (
-              <div className="flex items-center gap-3 ml-2">
-                <div className="flex items-center gap-2 text-slate-300 text-sm font-medium bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
-                  <UserIcon className="w-4 h-4 text-blue-400" />
-                  <span className="hidden lg:inline">{user?.name}</span>
+              <div className="flex shrink-0 items-center gap-3 ml-2">
+                <div title={user?.name} className="flex items-center gap-2 text-slate-300 text-sm font-medium bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                  <UserIcon aria-hidden="true" className="w-4 h-4 shrink-0 text-blue-400" />
+                  <span className="sr-only">Signed in as {user?.name}</span>
+                  <span aria-hidden="true" className="hidden max-w-32 truncate 2xl:block">{user?.name}</span>
                 </div>
                 <Button 
                   variant="ghost" 
                   size="sm" 
+                  aria-label="Logout"
                   onClick={() => logout()}
-                  className="text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors gap-2"
+                  className="min-h-[44px] min-w-[44px] text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors gap-2"
                 >
                   <LogOut className="w-4 h-4" />
                   <span className="hidden xl:inline">Logout</span>
@@ -137,11 +223,14 @@ export default function Layout({ children }: LayoutProps) {
           </nav>
 
           {/* Mobile Menu Toggle */}
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex items-center gap-2 lg:hidden">
             <SearchDialog />
 
             <button
-              className="p-2 text-slate-400 hover:text-white"
+              className="min-h-[44px] min-w-[44px] p-2 text-slate-400 hover:text-white"
+              aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-navigation"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -154,21 +243,24 @@ export default function Layout({ children }: LayoutProps) {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
+            id="mobile-navigation"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-b border-white/5 bg-[#001A33]"
+            className="lg:hidden border-b border-white/5 bg-[#001A33]"
           >
             <div className="container py-4 flex flex-col gap-4">
               {/* Mobile Auth Section */}
               {isAuthenticated ? (
-                <div className="flex items-center justify-between py-2 border-b border-white/5">
-                  <span className="text-blue-400 text-sm font-bold flex items-center gap-2">
-                    <UserIcon className="w-4 h-4" /> {user?.name}
+                <div className="flex items-center justify-between gap-3 py-2 border-b border-white/5">
+                  <span className="min-w-0 flex-1 text-blue-400 text-sm font-bold flex items-center gap-2">
+                    <UserIcon aria-hidden="true" className="w-4 h-4 shrink-0" />
+                    <span title={user?.name} className="truncate">{user?.name}</span>
                   </span>
                   <button 
+                    aria-label="Logout"
                     onClick={() => logout()} 
-                    className="text-red-400 text-sm flex items-center gap-2 font-medium"
+                    className="min-h-[44px] min-w-[44px] shrink-0 text-red-400 text-sm flex items-center gap-2 font-medium"
                   >
                     <LogOut className="w-4 h-4" /> Logout
                   </button>
@@ -183,7 +275,7 @@ export default function Layout({ children }: LayoutProps) {
 
               {showPortfolioButton && (
                 <a 
-                  href="https://druhustle.github.io/portifolio/" 
+                  href={PORTFOLIO_URL}
                   className="flex items-center gap-2 text-sm font-bold text-blue-400 py-2 border-b border-white/5"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -206,6 +298,8 @@ export default function Layout({ children }: LayoutProps) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AccountProgressNotice {...account} />
 
       {/* Main Content */}
       <main className="flex-1">

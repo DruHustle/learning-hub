@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 import cors from "cors";
 import { db, connection, initializeSchema } from "./db";
 import { users, progress } from "./schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { hashPassword, verifyPassword, signSession, verifySession } from "./security";
@@ -38,7 +38,10 @@ async function startServer() {
     }
     next();
   });
-  const cookieOptions = { httpOnly: true, secure: isProduction, sameSite: isProduction ? "none" as const : "lax" as const, path: "/", maxAge: 15 * 60_000 };
+  // Pages calls the API cross-site. Partition the production cookie by frontend
+  // site so browsers can retain it without enabling third-party tracking.
+  const cookieOptions = { httpOnly: true, secure: isProduction, partitioned: isProduction, sameSite: isProduction ? "none" as const : "lax" as const, path: "/", maxAge: 15 * 60_000 };
+  const { maxAge: _maxAge, ...clearOptions } = cookieOptions;
   const authenticate = (req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.cookie?.split(";").map(value => value.trim()).find(value => value.startsWith("learning_session="))?.slice("learning_session=".length);
     const userId = token ? verifySession(token, secret) : null;
@@ -96,6 +99,9 @@ async function startServer() {
       if (user.password.split(":").length === 3) {
         await db.update(users).set({ password: await hashPassword(password) }).where(eq(users.id, user.id));
       }
+      // Retire the previous unpartitioned cookie before issuing a new login.
+      // Otherwise two cookies with the same name can select an older account.
+      if (isProduction) res.clearCookie("learning_session", { ...clearOptions, partitioned: false });
       res.cookie("learning_session", signSession(user.id, secret), cookieOptions);
       res.json({ success: true, user: publicUser(user) });
     } catch (error: any) {
@@ -112,8 +118,8 @@ async function startServer() {
     } catch { res.status(500).json({ error: "Internal server error" }); }
   });
   app.post("/api/logout", (_req, res) => {
-    const { maxAge: _maxAge, ...clearOptions } = cookieOptions;
     res.clearCookie("learning_session", clearOptions);
+    if (isProduction) res.clearCookie("learning_session", { ...clearOptions, partitioned: false });
     res.status(204).end();
   });
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
@@ -137,14 +143,30 @@ async function startServer() {
 
   app.post("/api/progress/:userId", authenticate, async (req, res) => {
     if (!db) return res.status(500).json({ error: "Database not connected" });
-    const input = z.object({ completedTutorials: z.array(z.number().int().nonnegative()).max(10000), lastVisited: z.number().int().nonnegative().optional() }).safeParse(req.body);
+    const input = z.object({ completedTutorials: z.array(z.number().int().nonnegative()).max(10000), lastVisited: z.number().int().nonnegative().optional(), merge: z.boolean().optional() }).safeParse(req.body);
     if (!input.success) return res.status(400).json({ error: "Invalid progress" });
-    const { completedTutorials, lastVisited } = input.data;
+    const { completedTutorials, lastVisited, merge } = input.data;
     try {
-      await db.update(progress)
-        .set({ completedTutorials, lastVisited })
-        .where(eq(progress.userId, req.params.userId));
-      res.json({ success: true });
+      // Evaluate against the UPDATE target's current row, including after a
+      // concurrent updater releases its row lock. A read-then-write loses IDs.
+      const merged = sql<number[]>`(
+        SELECT COALESCE(jsonb_agg(completion ORDER BY completion), '[]'::jsonb)
+        FROM (
+          SELECT DISTINCT completion
+          FROM jsonb_array_elements(${progress.completedTutorials} || ${JSON.stringify(completedTutorials)}::jsonb) AS ids(completion)
+        ) AS distinct_completions
+      )`;
+      const [saved] = await db.update(progress)
+        .set({ completedTutorials: merge ? merged : completedTutorials, lastVisited })
+        .where(and(
+          eq(progress.userId, req.params.userId),
+          merge ? sql`jsonb_array_length(${merged}) <= 10000` : undefined,
+        ))
+        .returning({ completedTutorials: progress.completedTutorials });
+      // Missing records and an oversized union must not acknowledge unsaved IDs.
+      if (!saved) return res.status(409).json({ error: "Progress could not be saved. Reload your progress and retry." });
+      // Legacy callers retain full replacement, including an intentional [].
+      res.json(merge ? { success: true, progress: saved } : { success: true });
     } catch (error: any) {
       res.status(500).json({ error: "Internal server error" });
     }

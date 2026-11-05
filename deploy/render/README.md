@@ -1,9 +1,10 @@
 # Render API compute migration
 
 The approved target is a **free web service in My Workspace**, keeping the
-current external PostgreSQL primary. The frontend stays on Vercel/GitHub Pages.
-These files prepare the migration; committing them does not create a service or
-change the active API route. Automatic deployment is off.
+current external PostgreSQL primary. The frontend stays on Vercel/GitHub Pages. The qualified existing API is
+`https://learning-hub-api-candidate.onrender.com`. Source defaults select it;
+production routing changes still require an explicit verified release. Automatic
+Render deployment remains off.
 
 Select `deploy/render/render.yaml` as the Blueprint path. It defines one Docker
 web service, `learning-hub-api-candidate`, in Frankfurt on the `free` plan. It does
@@ -81,12 +82,14 @@ as an empty fixture.
    database is not ready for frontend traffic.
 4. For **Vercel**, prefer a same-origin API route: prepend an external rewrite
    from `/api/:path*` to the qualified Render origin's `/api/:path*` before the SPA
-   catch-all, and set `VITE_API_URL` to the frontend's own HTTPS origin. The client
+   catch-all. The checked-in Vercel build uses `VITE_API_URL=same-origin`, which
+   resolves to the actual browser host for staged deployments and production. The client
    already appends `/api/...`; do not put `/api` at the end of `VITE_API_URL`.
    Preserve the API's `Cache-Control: private, no-store` and disable rewrite
    caching for `/api/:path*` with `x-vercel-enable-rewrite-caching: 0`. Do not add a
-   placeholder upstream to `vercel.json`: add the real, qualified endpoint when
-   it exists. An explicit empty API value means demo-only behavior.
+   placeholder upstream: the checked-in `/api`, `/ready`, `/version` and `/health`
+   routes use the qualified Render endpoint. An explicit empty API value still
+   means demo-only behavior. `same-origin` is intended for Vercel, not Pages.
 5. **GitHub Pages** is static and cannot run the Vercel proxy. Its
    `LEARNING_API_ORIGIN` repository variable feeds both build and bundle
    verification. A direct qualified Render HTTPS origin, without `/api`, still
@@ -108,6 +111,13 @@ the previous API route can use the same retained primary; there is no final data
 copy or write freeze for this compute-only move. If a later migration introduces
 a second writable database, its data reconciliation needs a separate plan.
 
+Production sessions use a Secure, HttpOnly, host-only `Partitioned` cookie with
+`SameSite=None`. Each frontend site has its own browser session, including on
+WebKit when unpartitioned third-party cookies are blocked. Login and logout
+expire the older unpartitioned cookie as well. Keep the exact origin allowlist
+and mutation-origin checks. Browsers without partitioned-cookie support still
+need a qualified same-origin route; do not ask users to disable privacy controls.
+
 The retired `learning-hub-yfe1.onrender.com` deployment guard remains intentional.
 Qualify a new origin rather than silently reviving the retired service. Password
 reset, password change and profile changes remain unavailable in this application;
@@ -128,3 +138,7 @@ References: [Render Blueprints](https://render.com/docs/blueprint-spec),
 [free services](https://render.com/docs/free),
 [health checks](https://render.com/docs/health-checks), and
 [Vercel external rewrites](https://vercel.com/docs/routing/rewrites).
+
+### Free-service startup
+
+After an idle period, the frontend makes one read-only `/ready` request before sending account operations. A visible connection status remains available for up to two minutes while the host starts. Requests within five minutes share the confirmed readiness state. Readiness failure prevents sending account credentials or progress writes; the user can retry explicitly. Mutating requests keep their existing ten-second timeout and are never automatically replayed. No background keep-alive is used. Browser acceptance must include an actual idle host, login, session restoration, progress persistence and logout.

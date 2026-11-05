@@ -6,23 +6,31 @@ vi.mock('axios', () => ({ default: { create: mocks.create } }));
 describe('account API hosting', () => {
   beforeEach(() => {
     vi.resetModules();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ status: "ready" }) }));
     mocks.post.mockReset();
     mocks.create.mockReset().mockReturnValue({ post: mocks.post });
     vi.stubEnv('VITE_API_URL', undefined);
   });
-  afterEach(() => vi.unstubAllEnvs());
+  afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
-  it('uses Oracle for production sign-in and retains credentialed requests', async () => {
+  it('uses the qualified Render service for production sign-in and retains credentialed requests', async () => {
     vi.stubEnv('PROD', true);
     const user = { id: 'real-account', email: 'person@example.test', name: 'Person', role: 'user' };
     mocks.post.mockResolvedValue({ data: { success: true, user } });
     const { login } = await import('../lib/auth');
     expect(await login(user.email, 'test-only-password')).toEqual({ success: true, user });
     expect(mocks.create).toHaveBeenCalledWith({
-      baseURL: 'https://learning-api.152-70-22-84.sslip.io',
+      baseURL: 'https://learning-hub-api-candidate.onrender.com',
       timeout: 10_000, withCredentials: true,
     });
     expect(mocks.post).toHaveBeenCalledWith('/api/login', { email: user.email, password: 'test-only-password' });
+  });
+
+  it('keeps Vercel account requests on the actual browser host', async () => {
+    vi.stubEnv('VITE_API_URL', 'same-origin');
+    vi.stubGlobal('window', { location: { origin: 'https://protected-stage.example.test' } });
+    await import('../lib/auth');
+    expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({ baseURL: 'https://protected-stage.example.test', withCredentials: true }));
   });
 
   it('preserves explicit API overrides', async () => {

@@ -180,3 +180,8 @@ _________________________________________________________________
 ---
 
 For detailed deployment instructions, see [GITHUB_PAGES_DEPLOYMENT.md](./GITHUB_PAGES_DEPLOYMENT.md).
+
+Readiness checks preserve same-origin deployment-access cookies. Cross-origin
+readiness requests omit cookies, and login or progress writes still run only
+after readiness succeeds. The PWA browser suite verifies both origin boundaries
+using the real client module and isolated HTTP servers.

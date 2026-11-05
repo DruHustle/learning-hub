@@ -106,7 +106,7 @@ export default function Quiz({ tutorialId, questions, onComplete }: QuizProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         <RadioGroup 
-          value={selectedOption?.toString()} 
+          value={selectedOption === null ? "" : selectedOption.toString()}
           onValueChange={(val) => !isAnswered && setSelectedOption(parseInt(val))}
           className="space-y-3"
         >

@@ -2,6 +2,22 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://learning-hub-api-candidate.onrender.com/api/:path*"
+    },
+    {
+      "source": "/ready",
+      "destination": "https://learning-hub-api-candidate.onrender.com/ready"
+    },
+    {
+      "source": "/version",
+      "destination": "https://learning-hub-api-candidate.onrender.com/version"
+    },
+    {
+      "source": "/health",
+      "destination": "https://learning-hub-api-candidate.onrender.com/health"
+    },
+    {
       "source": "/learning-hub/assets/(.*)",
       "destination": "/assets/$1"
     },
@@ -15,6 +31,32 @@
     }
   ],
   "headers": [
+    {
+      "source": "/api/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
+        },
+        {
+          "key": "x-vercel-enable-rewrite-caching",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "source": "/ready",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
+        },
+        {
+          "key": "x-vercel-enable-rewrite-caching",
+          "value": "0"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
@@ -33,5 +75,5 @@
       ]
     }
   ],
-  "buildCommand": "pnpm build && pnpm verify:deployment"
+  "buildCommand": "VITE_API_URL=same-origin pnpm build && VITE_API_URL=same-origin pnpm verify:deployment"
 }

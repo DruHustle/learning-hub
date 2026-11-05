@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -108,6 +108,148 @@ test("built PWA keeps Pages scope, offline content, safe API requests and prompt
   await page.reload();
   await page.waitForFunction(() => navigator.serviceWorker.controller?.state === "activated");
   await page.getByRole("heading", { name: "Master AI Solutions on Learning Hub" }).waitFor();
+
+  // The Portfolio return link adds another desktop control. Check both entry
+  // paths around the tablet transition against the real built layout.
+  const evidence = process.env.PWA_OUTPUT_DIR || path.join(tmpdir(), "learning-hub-pwa");
+  await mkdir(evidence, { recursive: true });
+  const longAccountName = "AlexandriaNyamadzawo".repeat(10); // Within the API's 255-character limit.
+  const headerCases = [779, 1024, 1090].flatMap((width) =>
+    [false, true].map((referred) => ({ width, referred, authenticated: false })),
+  ).concat(
+    [1280, 1536].map((width) => ({ width, referred: true, authenticated: false })),
+    [340, 1024, 1090, 1280, 1536].map((width) => ({ width, referred: true, authenticated: true })),
+  );
+  for (const { width, referred, authenticated } of headerCases) {
+      const caseName = `header-${authenticated ? "account-" : ""}${referred ? "portfolio" : "direct"}-${width}`;
+      await t.test(caseName, { timeout: 20_000 }, async () => {
+        // Account geometry uses a fresh, entirely mocked session. Service workers
+        // cannot bypass interception, and no production API request is forwarded.
+        const headerContext = authenticated
+          ? await browser.newContext({ serviceWorkers: "block" })
+          : context;
+        const unexpectedApiRequests = [];
+        if (authenticated) {
+          await headerContext.route("**/*", (route) => {
+            const request = route.request();
+            const url = new URL(request.url());
+            const fixture = request.method() === "GET" && (
+              url.pathname === "/ready"
+                ? { status: "ready" }
+                : url.pathname === "/api/me"
+                ? { user: { id: "header-layout-user", name: longAccountName, email: "header-layout@example.test", role: "user" } }
+                : url.pathname === "/api/progress/header-layout-user"
+                  ? { completedTutorials: [1] }
+                  : null
+            );
+            if (fixture) return route.fulfill({
+              status: 200,
+              contentType: "application/json",
+              headers: { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true" },
+              body: JSON.stringify(fixture),
+            });
+            if (url.pathname.startsWith("/api/")) {
+              unexpectedApiRequests.push(`${request.method()} ${url.pathname}`);
+              return route.abort();
+            }
+            return [origin, apiOrigin].includes(url.origin) ? route.continue() : route.abort();
+          });
+        }
+        const headerPage = await headerContext.newPage();
+        headerPage.setDefaultTimeout(10_000);
+        headerPage.on("pageerror", (error) => pageErrors.push(error.message));
+        const checkAccountControls = async (region) => {
+          if (!authenticated) return;
+          const logout = region.getByRole("button", { name: "Logout", exact: true });
+          assert.equal(await logout.isVisible(), true, "Logout has a visible, named control");
+          const rect = await logout.boundingBox();
+          assert.ok(rect.width >= 44 && rect.height >= 44, "Logout remains at least 44 × 44");
+          assert.ok(rect.x >= -1 && rect.x + rect.width <= width + 1 && rect.y >= -1 && rect.y + rect.height <= 761,
+            `Logout stays reachable: ${JSON.stringify(rect)}`);
+          assert.ok((await region.ariaSnapshot()).includes(longAccountName), "The full account name remains accessible");
+        };
+        try {
+          await headerPage.setViewportSize({ width, height: 760 });
+          await headerPage.goto(origin + base, {
+            referer: referred ? "https://andrewgotora.com/" : undefined,
+          });
+          await headerPage.getByRole("heading", { name: "Master AI Solutions on Learning Hub" }).waitFor();
+          if (authenticated) {
+            await headerPage.locator("header").getByRole("button", { name: "Logout", exact: true, includeHidden: true }).waitFor({ state: "attached" });
+          }
+          const returnLink = headerPage.locator('header a[href="https://andrewgotora.com/"]');
+          if (referred) await returnLink.waitFor({ state: "attached" });
+          else assert.equal(await returnLink.count(), 0, "Direct visits do not inherit another tab's referral");
+
+          const geometry = await headerPage.evaluate(() => {
+            const header = document.querySelector("header");
+            const box = (element) => {
+              const rect = element.getBoundingClientRect();
+              return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, width: rect.width, height: rect.height };
+            };
+            return {
+              viewport: window.innerWidth,
+              documentWidth: document.documentElement.scrollWidth,
+              header: box(header),
+              brand: box(header.querySelector("a")),
+              navigation: box(header.querySelector("nav")),
+              controls: [...header.querySelectorAll("a, button")]
+                .filter((element) => element.getBoundingClientRect().width > 0)
+                .map((element) => ({ label: element.getAttribute("aria-label") || element.textContent.trim(), ...box(element) })),
+            };
+          });
+          await headerPage.screenshot({ path: path.join(evidence, `${caseName}.png`) });
+          await writeFile(path.join(evidence, `${caseName}.json`), JSON.stringify(geometry, null, 2));
+          assert.ok(geometry.documentWidth <= width + 1, `Page overflows: ${JSON.stringify(geometry)}`);
+          for (const control of geometry.controls) {
+            assert.ok(control.left >= -1 && control.right <= width + 1 &&
+              control.top >= geometry.header.top - 1 && control.bottom <= geometry.header.bottom + 1,
+            `Header control is clipped: ${JSON.stringify(control)}`);
+          }
+
+          const toggle = headerPage.getByRole("button", { name: "Open navigation menu", exact: true });
+          if (await toggle.isVisible()) {
+            const toggleBox = await toggle.boundingBox();
+            assert.ok(toggleBox.width >= 44 && toggleBox.height >= 44, "Menu target remains at least 44 × 44");
+            await toggle.click();
+            const menu = headerPage.locator("#mobile-navigation");
+            await menu.waitFor({ state: "visible" });
+            await headerPage.waitForFunction(() => {
+              const menu = document.querySelector("#mobile-navigation");
+              return menu && menu.clientHeight >= menu.scrollHeight - 1;
+            });
+            if (referred) {
+              const mobileReturn = menu.getByRole("link", { name: "Back to Portfolio", exact: true });
+              assert.equal(await mobileReturn.isVisible(), true);
+              assert.equal(await mobileReturn.getAttribute("href"), "https://andrewgotora.com/");
+            }
+            const menuBox = await menu.boundingBox();
+            assert.ok(menuBox.x >= -1 && menuBox.x + menuBox.width <= width + 1, "Expanded menu fits the viewport");
+            await headerPage.screenshot({ path: path.join(evidence, `${caseName}-menu.png`) });
+            assert.ok(await headerPage.evaluate(() => document.documentElement.scrollWidth) <= width + 1,
+              "Expanded account menu does not overflow the viewport");
+            await checkAccountControls(menu);
+            await menu.getByRole("link", { name: "Tutorials", exact: true }).click();
+            await headerPage.waitForURL("**/learning-hub/#/tutorials");
+            await menu.waitFor({ state: "hidden" });
+          } else {
+            assert.ok(geometry.navigation.width > 0, "A navigation route is available");
+            assert.ok(geometry.navigation.left >= geometry.brand.right - 1, "Desktop navigation does not overlap the brand");
+            if (referred) assert.equal(await returnLink.isVisible(), true);
+            await checkAccountControls(headerPage.locator("header"));
+            await headerPage.locator("header nav").getByRole("link", { name: "Tutorials", exact: true }).click();
+            await headerPage.waitForURL("**/learning-hub/#/tutorials");
+          }
+          assert.deepEqual(unexpectedApiRequests, [], "Header navigation does not mutate the fixture account");
+        } catch (error) {
+          await headerPage.screenshot({ path: path.join(evidence, `${caseName}-failure.png`) }).catch(() => {});
+          throw error;
+        } finally {
+          await headerPage.close();
+          if (authenticated) await headerContext.close();
+        }
+      });
+  }
 
   const registration = await page.evaluate(async () => {
     const registration = await navigator.serviceWorker.getRegistration();

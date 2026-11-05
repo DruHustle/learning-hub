@@ -17,8 +17,22 @@ jobs:
     name: Verify Learning Hub
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: learning_hub_progress_test
+          POSTGRES_USER: learning_test
+          POSTGRES_PASSWORD: learning_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U learning_test -d learning_hub_progress_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
-      VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-api.152-70-22-84.sslip.io' }}
+      VITE_API_URL: ${{ vars.LEARNING_API_ORIGIN || 'https://learning-hub-api-candidate.onrender.com' }}
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -51,6 +65,11 @@ jobs:
       - name: Run unit, server and deployment configuration tests
         run: pnpm test
 
+      - name: Verify concurrent progress updates against PostgreSQL
+        env:
+          TEST_DATABASE_URL: postgresql://learning_test:learning_test@127.0.0.1:5432/learning_hub_progress_test
+        run: pnpm test:progress-postgres
+
       - name: Build frontend and API
         run: pnpm build
 
@@ -61,4 +80,18 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Verify PWA offline, update and API cache behavior
+        env:
+          PWA_OUTPUT_DIR: ${{ runner.temp }}/learning-hub-pwa
         run: pnpm test:pwa
+
+      - name: Verify quiz question selection resets
+        run: pnpm test:quiz
+
+      - name: Upload responsive header evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: responsive-header-${{ github.sha }}
+          path: ${{ runner.temp }}/learning-hub-pwa
+          if-no-files-found: ignore
+          retention-days: 7
