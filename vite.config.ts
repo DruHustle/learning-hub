@@ -11,7 +11,7 @@ const plugins = [
   jsxLocPlugin(), 
   VitePWA({
     registerType: 'prompt',
-    includeAssets: ['favicon.ico', 'favicon.svg'],
+    includeAssets: ['favicon.ico', 'favicon.svg', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png'],
     manifest: {
       name: 'Learning Hub',
       short_name: 'Learning Hub',
@@ -24,6 +24,16 @@ const plugins = [
         src: 'favicon.svg',
         sizes: 'any',
         type: 'image/svg+xml',
+        purpose: 'any'
+      }, {
+        src: 'pwa-192x192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any'
+      }, {
+        src: 'pwa-512x512.png',
+        sizes: '512x512',
+        type: 'image/png',
         purpose: 'any'
       }]
     },
